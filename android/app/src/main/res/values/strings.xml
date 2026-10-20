@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Студибокс</string>
+    <string name="tab_today">Сегодня</string>
+    <string name="tab_schedule">Расписание</string>
+    <string name="tab_notes">Заметки</string>
+    <string name="tab_settings">Настройки</string>
+    <string name="choose_group">Выберите группу</string>
+    <string name="search_group">Поиск группы</string>
+    <string name="no_lessons_today">Сегодня занятий нет</string>
+    <string name="no_lessons_day">В этот день занятий нет</string>
+    <string name="no_notes">Нет заметок</string>
+    <string name="add_note">Добавить заметку</string>
+    <string name="notes_today">Заметки на сегодня</string>
+    <string name="offline_banner">Нет подключения. Показаны сохранённые данные.</string>
+    <string name="refresh_schedule">Обновить расписание</string>
+    <string name="notif_channel_reminders">Напоминания о занятиях</string>
+    <string name="notif_channel_reminders_desc">Уведомление за 10 минут до начала занятия</string>
+</resources>

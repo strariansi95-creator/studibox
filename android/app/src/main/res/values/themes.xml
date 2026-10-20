@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Studibox" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <!-- Фон окна до первого кадра Compose — чтобы не мигало белым. -->
+        <item name="android:windowBackground">#FFF5F7FB</item>
+    </style>
+</resources>

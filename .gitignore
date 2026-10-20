@@ -1,0 +1,34 @@
+# Ключ подписи и пароли — никогда не коммитить
+*.jks
+*.keystore
+keystore.properties
+local.properties
+
+# Сборка Android / Gradle
+.gradle/
+build/
+.kotlin/
+*.apk
+*.aab
+captures/
+.externalNativeBuild/
+.cxx/
+
+# IDE
+.idea/
+*.iml
+.cursor/
+.vscode/
+
+# Supabase CLI (локальное состояние, привязка к проекту)
+backend/supabase/.temp/
+.env
+.env.*
+
+# Отладочные файлы
+backend/.temp-debug-parse.json
+*.log
+
+# ОС
+.DS_Store
+Thumbs.db
