@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.studibox.app.data.prefs.ThemeMode
+import com.studibox.app.notifications.DeadlineNotificationScheduler
 import com.studibox.app.notifications.LessonNotificationScheduler
 import com.studibox.app.notifications.NotificationHelper
 import com.studibox.app.sync.SyncScheduler
@@ -31,7 +32,10 @@ class MainActivity : ComponentActivity() {
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             // Отказ в разрешении — не ошибка: приложение работает без уведомлений.
-            if (granted) LessonNotificationScheduler.rescheduleToday(this)
+            if (granted) {
+                LessonNotificationScheduler.rescheduleToday(this)
+                DeadlineNotificationScheduler.reschedule(this)
+            }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,6 +63,19 @@ class MainActivity : ComponentActivity() {
                     LaunchedEffect(Unit) {
                         appViewModel.refresh(force = false)
                         SyncScheduler.syncNow(this@MainActivity)
+                    }
+                    // Сменили роль, группу, ФИО, время напоминания или вошли/вышли
+                    // из СДО — переставляем напоминания сразу, а не при следующем запуске.
+                    val lmsSession by appViewModel.lmsSession.collectAsState()
+                    val current = settings
+                    LaunchedEffect(
+                        current?.userRole, current?.selectedGroup, current?.selectedTeacher,
+                        current?.notificationsEnabled, current?.reminderMinutes
+                    ) {
+                        LessonNotificationScheduler.rescheduleToday(this@MainActivity)
+                    }
+                    LaunchedEffect(current?.userRole, current?.notificationsEnabled, lmsSession?.userId) {
+                        DeadlineNotificationScheduler.reschedule(this@MainActivity)
                     }
                     StudiboxNavHost(appViewModel = appViewModel)
                 }

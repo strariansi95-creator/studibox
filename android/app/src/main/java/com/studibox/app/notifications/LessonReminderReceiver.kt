@@ -17,6 +17,8 @@ class LessonReminderReceiver : BroadcastReceiver() {
         val minutes = intent.getIntExtra(EXTRA_MINUTES, 10)
         val details = intent.getStringExtra(EXTRA_DETAILS).orEmpty()
         val notificationId = intent.getIntExtra(EXTRA_ID, subject.hashCode())
+        val title = intent.getStringExtra(EXTRA_TITLE) ?: "Через $minutes минут: $subject"
+        val channel = intent.getStringExtra(EXTRA_CHANNEL) ?: NotificationHelper.CHANNEL_REMINDERS
 
         if (subject.isBlank()) return
         if (!NotificationHelper.hasPermission(context)) {
@@ -32,9 +34,9 @@ class LessonReminderReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val notification = NotificationCompat.Builder(context, NotificationHelper.CHANNEL_REMINDERS)
+        val notification = NotificationCompat.Builder(context, channel)
             .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle("Через $minutes минут: $subject")
+            .setContentTitle(title)
             .setContentText(details.ifBlank { "Занятие скоро начнётся" })
             .setStyle(NotificationCompat.BigTextStyle().bigText(details))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -51,5 +53,8 @@ class LessonReminderReceiver : BroadcastReceiver() {
         const val EXTRA_DETAILS = "extra_details"
         const val EXTRA_MINUTES = "extra_minutes"
         const val EXTRA_ID = "extra_id"
+        /** Готовый заголовок (для дедлайнов), иначе «Через N минут: …». */
+        const val EXTRA_TITLE = "extra_title"
+        const val EXTRA_CHANNEL = "extra_channel"
     }
 }

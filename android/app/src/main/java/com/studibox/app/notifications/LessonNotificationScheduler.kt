@@ -6,6 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.studibox.app.AppGraph
+import com.studibox.app.data.prefs.UserRole
+import com.studibox.app.ui.common.aggregateForTeacher
 import com.studibox.app.util.DateUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,8 +23,13 @@ object LessonNotificationScheduler {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    /** Одно будущее напоминание: [key] стабилен для пары и даёт requestCode. */
+    private class Reminder(val key: String, val subject: String, val startTime: String, val details: String)
+
     /**
-     * Планирует напоминания на все оставшиеся сегодня занятия выбранной группы.
+     * Планирует напоминания на все оставшиеся сегодня занятия: студенту —
+     * его группы, преподавателю — его собственные пары (одна пара сразу у
+     * нескольких групп даёт одно напоминание со списком групп и аудиторий).
      * Используется неточный будильник (setWindow), чтобы не требовать
      * разрешение SCHEDULE_EXACT_ALARM.
      */
@@ -41,27 +48,55 @@ object LessonNotificationScheduler {
                     Log.w(NotificationHelper.TAG, "Нет разрешения POST_NOTIFICATIONS")
                     return@launch
                 }
-                val group = settings.selectedGroup ?: return@launch
-
                 val today = LocalDate.now()
-                val lessons = AppGraph.scheduleRepository.lessonsForDate(group, today)
+                val reminders = when (settings.userRole) {
+                    UserRole.STUDENT -> {
+                        val group = settings.selectedGroup ?: return@launch
+                        AppGraph.scheduleRepository.lessonsForDate(group, today).map { lesson ->
+                            Reminder(
+                                key = lesson.id,
+                                subject = lesson.subject,
+                                startTime = lesson.startTime,
+                                details = buildString {
+                                    if (lesson.startTime.isNotBlank()) append("${lesson.startTime} ")
+                                    if (lesson.classroom.isNotBlank()) append("· ауд. ${lesson.classroom} ")
+                                    if (lesson.teacher.isNotBlank()) append("· ${lesson.teacher}")
+                                }.trim()
+                            )
+                        }
+                    }
+                    UserRole.TEACHER -> {
+                        val teacher = settings.selectedTeacher ?: return@launch
+                        val lessons = AppGraph.scheduleRepository.lessonsForTeacherAndDate(teacher, today)
+                        aggregateForTeacher(lessons).map { slot ->
+                            Reminder(
+                                key = "teacher|${slot.id}",
+                                subject = slot.subject,
+                                startTime = slot.startTime,
+                                details = buildString {
+                                    if (slot.startTime.isNotBlank()) append("${slot.startTime} · ")
+                                    append(
+                                        slot.groups.joinToString(", ") { g ->
+                                            if (g.classroom.isNotBlank()) "${g.group} (ауд. ${g.classroom})" else g.group
+                                        }
+                                    )
+                                }.trim().removeSuffix("·").trim()
+                            )
+                        }
+                    }
+                }
                 val alarmManager = context.getSystemService(AlarmManager::class.java) ?: return@launch
                 val now = LocalDateTime.now()
                 var planned = 0
 
-                lessons.forEach { lesson ->
+                reminders.forEach { lesson ->
                     val start = DateUtils.parseTime(lesson.startTime) ?: return@forEach
                     val triggerAt = LocalDateTime.of(today, start)
                         .minusMinutes(settings.reminderMinutes.toLong())
                     if (triggerAt.isBefore(now)) return@forEach
 
-                    val details = buildString {
-                        if (lesson.startTime.isNotBlank()) append("${lesson.startTime} ")
-                        if (lesson.classroom.isNotBlank()) append("· ауд. ${lesson.classroom} ")
-                        if (lesson.teacher.isNotBlank()) append("· ${lesson.teacher}")
-                    }.trim()
-
-                    val id = requestCode(lesson.id)
+                    val details = lesson.details
+                    val id = requestCode(lesson.key)
                     val intent = Intent(context, LessonReminderReceiver::class.java).apply {
                         putExtra(LessonReminderReceiver.EXTRA_SUBJECT, lesson.subject)
                         putExtra(LessonReminderReceiver.EXTRA_DETAILS, details)

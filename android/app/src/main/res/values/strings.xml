@@ -15,5 +15,7 @@
     <string name="offline_banner">Нет подключения. Показаны сохранённые данные.</string>
     <string name="refresh_schedule">Обновить расписание</string>
     <string name="notif_channel_reminders">Напоминания о занятиях</string>
+    <string name="notif_channel_deadlines">Сроки сдачи заданий</string>
+    <string name="notif_channel_deadlines_desc">Напоминание о сроке сдачи задания в СДО за сутки</string>
     <string name="notif_channel_reminders_desc">Уведомление за 10 минут до начала занятия</string>
 </resources>

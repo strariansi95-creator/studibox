@@ -104,6 +104,11 @@ class ScheduleRepository(
     fun observeLessonsForTeacherAndDate(teacher: String, date: LocalDate): Flow<List<LessonEntity>> =
         db.lessonDao().observeByTeacherAndDate(teacher, DateUtils.iso(date))
 
+    suspend fun lessonsForTeacherAndDate(teacher: String, date: LocalDate): List<LessonEntity> =
+        runCatching { db.lessonDao().getByTeacherAndDate(teacher, DateUtils.iso(date)) }
+            .onFailure { Log.e(tag, "Ошибка Room при чтении занятий преподавателя", it) }
+            .getOrDefault(emptyList())
+
     fun observeLessonsForTeacherInRange(teacher: String, from: LocalDate, to: LocalDate): Flow<List<LessonEntity>> =
         db.lessonDao().observeByTeacherInRange(teacher, DateUtils.iso(from), DateUtils.iso(to))
 

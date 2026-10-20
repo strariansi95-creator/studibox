@@ -7,6 +7,7 @@ import androidx.work.WorkerParameters
 import com.studibox.app.AppGraph
 import com.studibox.app.data.prefs.UserRole
 import com.studibox.app.data.repo.SyncResult
+import com.studibox.app.notifications.DeadlineNotificationScheduler
 import com.studibox.app.notifications.LessonNotificationScheduler
 import kotlinx.coroutines.flow.first
 
@@ -17,6 +18,8 @@ class SyncWorker(
 
     override suspend fun doWork(): Result {
         AppGraph.ensure(applicationContext)
+        // Дедлайны СДО не зависят от расписания — обновляем при каждом запуске.
+        DeadlineNotificationScheduler.reschedule(applicationContext)
         return try {
             val role = AppGraph.settings.settings.first().userRole
             val result = if (role == UserRole.TEACHER) {

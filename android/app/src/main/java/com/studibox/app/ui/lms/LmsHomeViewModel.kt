@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studibox.app.AppGraph
 import com.studibox.app.data.prefs.UserRole
+import com.studibox.app.data.remote.LmsAssignment
 import com.studibox.app.data.remote.LmsCourse
+import com.studibox.app.data.repo.DownloadedLecture
 import com.studibox.app.data.remote.LmsSession
 import com.studibox.app.ui.common.TeacherLessonSlot
 import com.studibox.app.ui.common.aggregateForTeacher
@@ -24,7 +26,9 @@ import java.time.LocalDate
 data class LmsCoursesState(
     val loading: Boolean = false,
     val error: String? = null,
-    val courses: List<LmsCourse> = emptyList()
+    val courses: List<LmsCourse> = emptyList(),
+    /** Задания со сроком в ближайшие две недели. */
+    val deadlines: List<LmsAssignment> = emptyList()
 )
 
 /** Сколько дней вперёд показывать пары преподавателя на вкладке «СДО». */
@@ -74,9 +78,21 @@ class LmsHomeViewModel : ViewModel() {
         _courses.value = _courses.value.copy(loading = true, error = null)
         viewModelScope.launch {
             lms.courses(force)
-                .onSuccess { _courses.value = LmsCoursesState(courses = it) }
+                .onSuccess { list ->
+                    _courses.value = LmsCoursesState(courses = list)
+                    // Дедлайны — отдельным запросом: их ошибка не прячет список курсов.
+                    val deadlines = lms.upcomingDeadlines(days = 14, force = force).getOrDefault(emptyList())
+                    _courses.value = _courses.value.copy(deadlines = deadlines)
+                }
                 .onFailure { _courses.value = LmsCoursesState(error = it.message ?: "Ошибка СДО") }
         }
+    }
+
+    /** Скачанные лекции — показываются и без входа, и без интернета. */
+    val downloads: StateFlow<List<DownloadedLecture>> = AppGraph.lectureStorage.downloaded
+
+    fun deleteDownload(lecture: DownloadedLecture) {
+        viewModelScope.launch { AppGraph.lectureStorage.delete(lecture) }
     }
 
     fun logout() {

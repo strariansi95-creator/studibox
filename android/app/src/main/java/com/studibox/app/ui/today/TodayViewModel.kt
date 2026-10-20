@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.studibox.app.AppGraph
 import com.studibox.app.data.local.LessonEntity
 import com.studibox.app.data.local.NoteEntity
+import com.studibox.app.data.remote.LmsAssignment
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -53,6 +55,18 @@ class TodayViewModel : ViewModel() {
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val notes: StateFlow<List<NoteEntity>> = notesRepo.observeForDate(LocalDate.now())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /**
+     * Задания СДО со сроком в ближайшую неделю. Пусто, если вход в СДО не
+     * выполнен или нет сети — экран «Сегодня» от этого не зависит.
+     */
+    val deadlines: StateFlow<List<LmsAssignment>> = AppGraph.lmsRepository.session
+        .mapLatest { session ->
+            if (session == null) emptyList()
+            else AppGraph.lmsRepository.upcomingDeadlines(days = 7).getOrDefault(emptyList())
+        }
+        .catch { emit(emptyList()) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun deleteNote(id: Long) {

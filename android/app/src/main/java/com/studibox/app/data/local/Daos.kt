@@ -85,6 +85,9 @@ interface LessonDao {
     @Query("SELECT DISTINCT date FROM lessons WHERE teacher = :teacher ORDER BY date ASC")
     fun observeDatesForTeacher(teacher: String): Flow<List<String>>
 
+    @Query("SELECT * FROM lessons WHERE teacher = :teacher AND date = :date ORDER BY number ASC, startTime ASC")
+    suspend fun getByTeacherAndDate(teacher: String, date: String): List<LessonEntity>
+
     /** Пары преподавателя в диапазоне дат [from, to] — для экрана «СДО». */
     @Query(
         "SELECT * FROM lessons WHERE teacher = :teacher AND date >= :fromIso AND date <= :toIso " +

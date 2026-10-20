@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 object NotificationHelper {
 
     const val CHANNEL_REMINDERS = "studibox_lesson_reminders"
+    const val CHANNEL_DEADLINES = "studibox_deadlines"
     const val TAG = "StudiboxNotif"
 
     fun createChannels(context: Context) {
@@ -25,7 +26,14 @@ object NotificationHelper {
             description = context.getString(com.studibox.app.R.string.notif_channel_reminders_desc)
             enableVibration(true)
         }
-        runCatching { manager.createNotificationChannel(channel) }
+        val deadlines = NotificationChannel(
+            CHANNEL_DEADLINES,
+            context.getString(com.studibox.app.R.string.notif_channel_deadlines),
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
+            description = context.getString(com.studibox.app.R.string.notif_channel_deadlines_desc)
+        }
+        runCatching { manager.createNotificationChannels(listOf(channel, deadlines)) }
             .onFailure { Log.e(TAG, "Не удалось создать канал уведомлений", it) }
     }
 

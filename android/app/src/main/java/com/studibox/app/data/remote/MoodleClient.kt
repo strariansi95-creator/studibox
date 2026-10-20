@@ -33,15 +33,22 @@ data class LmsAssignment(
     val courseName: String,
     val name: String,
     val intro: String,
+    /** Срок сдачи, секунды Unix. */
     val dueDate: Long?,
-    val isLab: Boolean
+    val isLab: Boolean,
+    /** Страница задания на портале (без токена — откроется в браузере). */
+    val url: String? = null
 )
 
 data class LmsFile(
     val name: String,
-    /** Уже с токеном — открывается напрямую, без входа в браузере. */
+    /**
+     * Для файлов — адрес с токеном: скачивается только внутри приложения
+     * и наружу не передаётся. Для ссылок ([isLink]) — обычный внешний адрес.
+     */
     val url: String,
-    val mimeType: String
+    val mimeType: String,
+    val isLink: Boolean = false
 )
 
 data class LmsModule(
@@ -138,7 +145,8 @@ class MoodleClient(
                     dueDate = due,
                     isLab = name.contains("лаборатор", ignoreCase = true) ||
                         name.contains("лаб.", ignoreCase = true) ||
-                        name.contains("л/р", ignoreCase = true)
+                        name.contains("л/р", ignoreCase = true),
+                    url = a.int("cmid")?.let { "$root/mod/assign/view.php?id=$it" }
                 )
             }
         }
@@ -147,6 +155,16 @@ class MoodleClient(
                 .thenBy { it.dueDate ?: Long.MAX_VALUE }
                 .thenBy { it.name }
         )
+    }
+
+    /** true, если студент уже отправил работу по заданию (не черновик). */
+    fun isSubmitted(token: String, assignId: Int): Boolean {
+        val payload = rest(token, "mod_assign_get_submission_status", mapOf("assignid" to assignId.toString()))
+        val status = ((payload as? JsonObject)
+            ?.get("lastattempt") as? JsonObject)
+            ?.let { (it["submission"] as? JsonObject) ?: (it["teamsubmission"] as? JsonObject) }
+            ?.str("status")
+        return status == "submitted"
     }
 
     /** Разделы курса с материалами (лекции, файлы, ссылки). Скрытые модули пропускаются. */
@@ -164,10 +182,12 @@ class MoodleClient(
                 val files = (m["contents"] as? JsonArray).orEmpty().mapNotNull { contentEl ->
                     val c = contentEl as? JsonObject ?: return@mapNotNull null
                     val fileUrl = c.str("fileurl") ?: return@mapNotNull null
+                    val isLink = c.str("type") == "url"
                     LmsFile(
                         name = c.str("filename") ?: m.str("name").orEmpty(),
-                        url = if (c.str("type") == "url") fileUrl else withToken(fileUrl, token),
-                        mimeType = c.str("mimetype").orEmpty()
+                        url = if (isLink) fileUrl else withToken(fileUrl, token),
+                        mimeType = c.str("mimetype").orEmpty(),
+                        isLink = isLink
                     )
                 }
                 LmsModule(

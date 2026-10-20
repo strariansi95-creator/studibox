@@ -6,6 +6,7 @@ import com.studibox.app.data.prefs.LmsStore
 import com.studibox.app.data.prefs.SettingsStore
 import com.studibox.app.data.remote.NetworkModule
 import com.studibox.app.data.remote.ScheduleApi
+import com.studibox.app.data.repo.LectureStorage
 import com.studibox.app.data.repo.LmsRepository
 import com.studibox.app.data.repo.NotesRepository
 import com.studibox.app.data.repo.ScheduleRepository
@@ -30,6 +31,8 @@ object AppGraph {
         private set
     lateinit var lmsRepository: LmsRepository
         private set
+    lateinit var lectureStorage: LectureStorage
+        private set
 
     fun init(context: Context) {
         if (initialized) return
@@ -42,6 +45,7 @@ object AppGraph {
             scheduleRepository = ScheduleRepository(database, api, settings)
             notesRepository = NotesRepository(database.noteDao())
             lmsRepository = LmsRepository(LmsStore(appContext))
+            lectureStorage = LectureStorage(appContext)
             initialized = true
         }
     }

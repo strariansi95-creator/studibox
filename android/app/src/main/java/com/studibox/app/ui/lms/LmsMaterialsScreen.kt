@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.DownloadForOffline
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,6 +22,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -28,7 +31,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,11 +56,27 @@ fun LmsMaterialsScreen(
     courseId: Int?,
     onBack: () -> Unit,
     onLogin: () -> Unit,
+    onOpenPdf: (path: String, title: String) -> Unit,
     viewModel: LmsMaterialsViewModel = viewModel()
 ) {
     val colors = StudiboxTheme.colors
+    val context = LocalContext.current
     val state by viewModel.state.collectAsState()
     val loggedIn by viewModel.loggedIn.collectAsState()
+    val downloading by viewModel.downloading.collectAsState()
+    val downloaded by viewModel.downloaded.collectAsState()
+    val snackbar = remember { SnackbarHostState() }
+
+    LaunchedEffect(viewModel) {
+        viewModel.openRequests.collect { request ->
+            when (request) {
+                is LmsOpenRequest.Link -> openLmsUrl(context, request.url)
+                is LmsOpenRequest.Pdf -> onOpenPdf(request.file.absolutePath, request.title)
+                is LmsOpenRequest.OtherFile -> openDownloadedFile(context, request.file, request.mimeType)
+                is LmsOpenRequest.Message -> snackbar.showSnackbar(request.text)
+            }
+        }
+    }
 
     // Перезагрузка и после возврата с экрана входа: loggedIn станет true.
     LaunchedEffect(subject, courseId, loggedIn) {
@@ -64,6 +85,7 @@ fun LmsMaterialsScreen(
 
     Scaffold(
         containerColor = colors.background,
+        snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -85,6 +107,11 @@ fun LmsMaterialsScreen(
                     }
                 },
                 actions = {
+                    if (state.course != null && !state.showPicker && state.sections.isNotEmpty()) {
+                        IconButton(onClick = viewModel::downloadAll) {
+                            Icon(Icons.Filled.DownloadForOffline, contentDescription = "Скачать все для офлайна")
+                        }
+                    }
                     if (loggedIn == true) {
                         IconButton(onClick = { viewModel.load(subject, courseId, force = true) }) {
                             Icon(Icons.Filled.Refresh, contentDescription = "Обновить")
@@ -133,7 +160,7 @@ fun LmsMaterialsScreen(
                 if (state.showPicker) {
                     coursePicker(state, subject, viewModel)
                 } else {
-                    materials(state, subject, viewModel)
+                    materials(state, subject, viewModel, downloaded, downloading)
                 }
 
                 item(key = "bottom-space") { Spacer(Modifier.height(8.dp)) }
@@ -186,7 +213,9 @@ private fun androidx.compose.foundation.lazy.LazyListScope.coursePicker(
 private fun androidx.compose.foundation.lazy.LazyListScope.materials(
     state: LmsMaterialsState,
     subject: String?,
-    viewModel: LmsMaterialsViewModel
+    viewModel: LmsMaterialsViewModel,
+    downloaded: Set<String>,
+    downloading: Set<String>
 ) {
     val course = state.course ?: return
     item(key = "course") {
@@ -204,6 +233,20 @@ private fun androidx.compose.foundation.lazy.LazyListScope.materials(
                     modifier = Modifier.padding(top = 10.dp)
                 )
             }
+        }
+    }
+
+    if (state.assignments.isNotEmpty()) {
+        item(key = "assignments-title") {
+            Text(
+                text = "Задания и сроки сдачи",
+                style = MaterialTheme.typography.labelLarge,
+                color = StudiboxTheme.colors.textTertiary,
+                modifier = Modifier.padding(top = 8.dp, start = 4.dp)
+            )
+        }
+        items(state.assignments, key = { "assign-${it.id}" }) { assignment ->
+            DeadlineCard(assignment, showCourse = false)
         }
     }
 
@@ -239,7 +282,12 @@ private fun androidx.compose.foundation.lazy.LazyListScope.materials(
             }
         }
         items(section.modules, key = { "module-${section.id}-${it.id}" }) { module ->
-            LmsModuleCard(module)
+            LmsModuleCard(
+                module = module,
+                downloadedKeys = downloaded,
+                downloadingKeys = downloading,
+                onOpenFile = { file -> viewModel.openFile(module, file) }
+            )
         }
     }
 }

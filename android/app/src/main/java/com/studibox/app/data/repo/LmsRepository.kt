@@ -2,6 +2,7 @@ package com.studibox.app.data.repo
 
 import android.util.Log
 import com.studibox.app.data.prefs.LmsStore
+import com.studibox.app.data.remote.LmsAssignment
 import com.studibox.app.data.remote.LmsAuthException
 import com.studibox.app.data.remote.LmsCourse
 import com.studibox.app.data.remote.LmsSection
@@ -30,6 +31,7 @@ class LmsRepository(
 
     private var cachedCourses: Pair<Int, List<LmsCourse>>? = null
     private val cachedContents = HashMap<Int, List<LmsSection>>()
+    private var cachedAssignments: Pair<Int, List<LmsAssignment>>? = null
 
     val session: Flow<LmsSession?> = store.session
 
@@ -64,6 +66,35 @@ class LmsRepository(
         }
     }
 
+    /** Все задания по курсам пользователя (со сроками и без). */
+    suspend fun assignments(force: Boolean = false): Result<List<LmsAssignment>> {
+        val courses = courses(force).getOrElse { return Result.failure(it) }
+        return authorized { session ->
+            mutex.withLock {
+                val cached = cachedAssignments
+                if (!force && cached != null && cached.first == session.userId) return@withLock cached.second
+                client.assignments(session.token, courses)
+                    .also { cachedAssignments = session.userId to it }
+            }
+        }
+    }
+
+    /**
+     * Задания со сроком в ближайшие [days] дней (просроченные не попадают),
+     * от ближайшего к дальнему.
+     */
+    suspend fun upcomingDeadlines(days: Long = 14, force: Boolean = false): Result<List<LmsAssignment>> =
+        assignments(force).map { list ->
+            val now = System.currentTimeMillis() / 1000
+            val until = now + days * 24 * 3600
+            list.filter { val due = it.dueDate; due != null && due in now..until }
+                .sortedBy { it.dueDate }
+        }
+
+    /** Отправлена ли работа. Ошибка проверки = «не знаем», то есть не сдано. */
+    suspend fun isSubmitted(assignId: Int): Boolean =
+        authorized { session -> client.isSubmitted(session.token, assignId) }.getOrDefault(false)
+
     /** Курс для предмета из расписания: сначала ручной выбор пользователя, потом автоподбор. */
     suspend fun courseForSubject(subject: String): Result<LmsCourse?> =
         courses().map { list ->
@@ -96,6 +127,7 @@ class LmsRepository(
     private fun clearCache() {
         cachedCourses = null
         cachedContents.clear()
+        cachedAssignments = null
     }
 
     private fun humanError(e: Throwable): String = when (e) {

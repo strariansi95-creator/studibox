@@ -11,10 +11,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DownloadDone
 import androidx.compose.material.icons.filled.School
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,10 +29,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.studibox.app.data.prefs.UserRole
+import com.studibox.app.data.repo.DownloadedLecture
+import com.studibox.app.data.repo.LectureStorage
 import com.studibox.app.ui.common.AppCard
+import com.studibox.app.ui.common.AppIconTile
 import com.studibox.app.ui.common.AppInitialsAvatar
 import com.studibox.app.ui.common.AppSecondaryButton
 import com.studibox.app.ui.common.AppStatePlaceholder
@@ -51,9 +61,16 @@ fun LmsHomeScreen(
     onOpenCourse: (Int) -> Unit,
     onOpenLesson: (String) -> Unit,
     onChangeTeacher: () -> Unit,
+    onOpenPdf: (path: String, title: String) -> Unit,
     viewModel: LmsHomeViewModel = viewModel()
 ) {
     val colors = StudiboxTheme.colors
+    val context = LocalContext.current
+    val downloads by viewModel.downloads.collectAsState()
+    val openDownload: (DownloadedLecture) -> Unit = { lecture ->
+        if (LectureStorage.isPdf(lecture.file)) onOpenPdf(lecture.file.absolutePath, lecture.name)
+        else openDownloadedFile(context, lecture.file, "")
+    }
     val session by viewModel.session.collectAsState()
     val sessionLoaded by viewModel.sessionLoaded.collectAsState()
     val role by viewModel.role.collectAsState()
@@ -112,6 +129,7 @@ fun LmsHomeScreen(
                     onAction = onLogin
                 )
             }
+            downloadsSection(downloads, openDownload, viewModel::deleteDownload)
             return@LazyColumn
         }
 
@@ -148,6 +166,13 @@ fun LmsHomeScreen(
                         .fillMaxWidth()
                         .padding(top = 12.dp)
                 )
+            }
+        }
+
+        if (courses.deadlines.isNotEmpty()) {
+            item(key = "deadlines-title") { SectionTitle(if (isTeacher) "Сроки сдачи у студентов" else "Сроки сдачи") }
+            items(courses.deadlines, key = { "deadline-${it.id}" }) { assignment ->
+                DeadlineCard(assignment)
             }
         }
 
@@ -214,7 +239,75 @@ fun LmsHomeScreen(
             }
         }
 
+        downloadsSection(downloads, openDownload, viewModel::deleteDownload)
+
         item(key = "bottom-space") { Spacer(Modifier.height(8.dp)) }
+    }
+}
+
+/** «Скачанные лекции»: открываются без интернета, лишнее можно удалить. */
+private fun LazyListScope.downloadsSection(
+    downloads: List<DownloadedLecture>,
+    onOpen: (DownloadedLecture) -> Unit,
+    onDelete: (DownloadedLecture) -> Unit
+) {
+    if (downloads.isEmpty()) return
+    item(key = "downloads-title") {
+        SectionTitle("Скачанные лекции · ${formatSize(downloads.sumOf { it.sizeBytes })}")
+    }
+    downloads.groupBy { it.courseName }.forEach { (courseName, lectures) ->
+        item(key = "downloads-course-${lectures.first().courseId}") {
+            Text(
+                text = courseName.ifBlank { "Курс" },
+                style = MaterialTheme.typography.labelLarge,
+                color = StudiboxTheme.colors.textTertiary,
+                modifier = Modifier.padding(top = 4.dp, start = 4.dp)
+            )
+        }
+        items(lectures, key = { "download-${it.file.absolutePath}" }) { lecture ->
+            DownloadedLectureCard(lecture, onOpen = { onOpen(lecture) }, onDelete = { onDelete(lecture) })
+        }
+    }
+}
+
+private fun formatSize(bytes: Long): String = when {
+    bytes >= 1024 * 1024 -> String.format(java.util.Locale("ru"), "%.1f МБ", bytes / 1024f / 1024f)
+    else -> "${(bytes / 1024).coerceAtLeast(1)} КБ"
+}
+
+@Composable
+private fun DownloadedLectureCard(lecture: DownloadedLecture, onOpen: () -> Unit, onDelete: () -> Unit) {
+    val colors = StudiboxTheme.colors
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onOpen,
+        contentPadding = PaddingValues(start = 14.dp, end = 4.dp, top = 6.dp, bottom = 6.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            AppIconTile(icon = Icons.Filled.DownloadDone, size = 34.dp, tint = colors.success,
+                containerColor = colors.success.copy(alpha = 0.14f))
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 12.dp)
+            ) {
+                Text(
+                    text = lecture.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.textPrimary,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = formatSize(lecture.sizeBytes),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colors.textTertiary
+                )
+            }
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Filled.Delete, contentDescription = "Удалить с телефона", tint = colors.textTertiary)
+            }
+        }
     }
 }
 

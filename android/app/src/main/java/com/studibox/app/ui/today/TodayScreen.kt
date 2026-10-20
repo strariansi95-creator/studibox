@@ -49,6 +49,7 @@ import com.studibox.app.ui.common.TeacherLessonCard
 import com.studibox.app.ui.common.TeacherLessonSlot
 import com.studibox.app.ui.common.classifyLessons
 import com.studibox.app.ui.common.classifyTeacherSlots
+import com.studibox.app.ui.lms.DeadlineCard
 import com.studibox.app.ui.theme.AppShapes
 import com.studibox.app.ui.theme.Spacing
 import com.studibox.app.ui.theme.StudiboxTheme
@@ -224,6 +225,7 @@ fun TodayScreen(
     val group by viewModel.group.collectAsState()
     val subgroups by viewModel.availableSubgroups.collectAsState()
     val selectedSubgroup by viewModel.selectedSubgroup.collectAsState()
+    val deadlines by viewModel.deadlines.collectAsState()
     val today = viewModel.today
 
     val role by viewModel.role.collectAsState()
@@ -305,6 +307,15 @@ fun TodayScreen(
                         onClick = { onOpenLesson(lesson.subject) }
                     )
                 }
+            }
+        }
+
+        if (deadlines.isNotEmpty()) {
+            item(key = "deadlines-title") {
+                SectionRow(title = "Сроки сдачи", modifier = Modifier.padding(top = 12.dp))
+            }
+            items(deadlines, key = { "deadline-${it.id}" }) { assignment ->
+                DeadlineCard(assignment)
             }
         }
 

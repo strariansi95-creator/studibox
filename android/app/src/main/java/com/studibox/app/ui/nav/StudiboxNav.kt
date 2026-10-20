@@ -38,6 +38,7 @@ import com.studibox.app.ui.groups.GroupPickerScreen
 import com.studibox.app.ui.lms.LmsHomeScreen
 import com.studibox.app.ui.lms.LmsLoginScreen
 import com.studibox.app.ui.lms.LmsMaterialsScreen
+import com.studibox.app.ui.lms.PdfViewerScreen
 import com.studibox.app.ui.notes.NoteEditScreen
 import com.studibox.app.ui.notes.NotesScreen
 import com.studibox.app.ui.notifications.NotificationsScreen
@@ -61,6 +62,11 @@ object Routes {
     const val LMS = "lms"
     const val LMS_LOGIN = "lms_login"
     const val LMS_MATERIALS = "lms_materials"
+    const val PDF_VIEWER = "pdf_viewer"
+
+    /** Встроенный просмотр скачанной лекции (путь внутри filesDir приложения). */
+    fun pdfViewer(path: String, title: String) =
+        "$PDF_VIEWER?path=${Uri.encode(path)}&title=${Uri.encode(title)}"
 
     /** Лекции пары: курс СДО подбирается по названию предмета. */
     fun lessonMaterials(subject: String) = "$LMS_MATERIALS?subject=${Uri.encode(subject)}"
@@ -271,7 +277,22 @@ fun StudiboxNavHost(appViewModel: AppViewModel) {
                         onLogin = { navController.navigate(Routes.LMS_LOGIN) },
                         onOpenCourse = { id -> navController.navigate(Routes.courseMaterials(id)) },
                         onOpenLesson = { subject -> navController.navigate(Routes.lessonMaterials(subject)) },
-                        onChangeTeacher = { navController.navigate(Routes.TEACHER_PICKER) }
+                        onChangeTeacher = { navController.navigate(Routes.TEACHER_PICKER) },
+                        onOpenPdf = { path, title -> navController.navigate(Routes.pdfViewer(path, title)) }
+                    )
+                }
+
+                composable(
+                    route = "${Routes.PDF_VIEWER}?path={path}&title={title}",
+                    arguments = listOf(
+                        navArgument("path") { type = NavType.StringType; defaultValue = "" },
+                        navArgument("title") { type = NavType.StringType; defaultValue = "" }
+                    )
+                ) { entry ->
+                    PdfViewerScreen(
+                        path = entry.arguments?.getString("path").orEmpty(),
+                        title = entry.arguments?.getString("title").orEmpty().ifBlank { "Лекция" },
+                        onBack = { navController.popBackStack() }
                     )
                 }
 
@@ -300,7 +321,8 @@ fun StudiboxNavHost(appViewModel: AppViewModel) {
                         subject = entry.arguments?.getString("subject"),
                         courseId = entry.arguments?.getInt("courseId")?.takeIf { it > 0 },
                         onBack = { navController.popBackStack() },
-                        onLogin = { navController.navigate(Routes.LMS_LOGIN) }
+                        onLogin = { navController.navigate(Routes.LMS_LOGIN) },
+                        onOpenPdf = { path, title -> navController.navigate(Routes.pdfViewer(path, title)) }
                     )
                 }
 

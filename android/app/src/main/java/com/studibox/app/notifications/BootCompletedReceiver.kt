@@ -14,5 +14,6 @@ class BootCompletedReceiver : BroadcastReceiver() {
         NotificationHelper.createChannels(context)
         SyncScheduler.schedulePeriodic(context)
         LessonNotificationScheduler.rescheduleToday(context)
+        DeadlineNotificationScheduler.reschedule(context)
     }
 }
