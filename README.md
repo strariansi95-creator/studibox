@@ -65,9 +65,35 @@ F:\AIAPP2\android\app\build\outputs\apk\release\app-release.apk
 ## Подпись
 
 Release подписывается ключом `android\keystore\studibox-release.jks`
-(параметры в `android\keystore.properties`, пароль `studibox2026`).
+(параметры в `android\keystore.properties`). Оба файла в репозиторий
+не входят (`.gitignore`) — храните их копию отдельно.
 Благодаря этому APK устанавливается на устройство сразу, без ручной подписи.
 Для публикации в Google Play замените ключ на свой.
+
+## Релизные сборки (GitHub Actions)
+
+Ветка **`release`** — релизная. Каждый push в неё запускает
+`.github/workflows/release-apk.yml`: собирается подписанный APK и
+публикуется в [Releases](../../releases) с тегом `v<versionName>-<номер сборки>`.
+
+Порядок выпуска:
+
+```bat
+git checkout release
+git merge main
+git push
+```
+
+Для подписи в CI нужны секреты репозитория (Settings → Secrets and variables → Actions):
+
+| Секрет | Что это |
+|---|---|
+| `KEYSTORE_BASE64` | файл `studibox-release.jks` в base64 |
+| `KEYSTORE_PASSWORD` | `storePassword` из `keystore.properties` |
+| `KEY_ALIAS` | `keyAlias` |
+| `KEY_PASSWORD` | `keyPassword` |
+
+Без секретов workflow не падает, а пропускает сборку с предупреждением.
 
 ## Проверка APK после сборки
 
