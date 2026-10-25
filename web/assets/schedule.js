@@ -56,13 +56,34 @@ function addDays(date, n) {
   d.setDate(d.getDate() + n);
   return d;
 }
+/**
+ * «Сейчас» по Якутску, а не по часам устройства: расписание СВФУ — местное,
+ * и с компьютера в другом часовом поясе пары не должны подсвечиваться со сдвигом.
+ * Возвращает обычный Date, у которого getHours()/getDay() — якутские.
+ */
+function yktNow() {
+  try {
+    const parts = Object.fromEntries(
+      new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Yakutsk",
+        year: "numeric", month: "numeric", day: "numeric",
+        hour: "numeric", minute: "numeric", second: "numeric",
+        hourCycle: "h23",
+      }).formatToParts(new Date()).map((p) => [p.type, p.value])
+    );
+    return new Date(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute, +parts.second);
+  } catch {
+    return new Date();
+  }
+}
+
 /** В воскресенье учебная неделя уже прошла — показываем следующую. */
 function currentWeekStart() {
-  const today = new Date();
+  const today = yktNow();
   return mondayOf(weekdayIndex(today) === 6 ? addDays(today, 1) : today);
 }
 function currentStudyDay() {
-  const day = weekdayIndex(new Date());
+  const day = weekdayIndex(yktNow());
   return day === 6 ? 0 : Math.min(day, STUDY_DAYS - 1);
 }
 function humanDate(date) {
@@ -458,9 +479,34 @@ function lessonsFor(dateIso) {
       .sort(byTime);
   }
   const sub = state.subgroup;
-  return rows
+  const lessons = rows
     .filter((r) => !sub || !subgroupDigit(r.subgroup) || subgroupDigit(r.subgroup) === sub)
     .sort(byTime);
+  return toSlots(lessons);
+}
+
+/**
+ * Пары разных подгрупп в одно и то же время — одна карточка с частями
+ * «1 подгруппа» / «2 подгруппа». Если у одновременных пар подгруппа не
+ * указана, это не деление на подгруппы — такие пары остаются отдельными.
+ */
+function toSlots(lessons) {
+  const byKey = new Map();
+  for (const l of lessons) {
+    const key = [l.lesson_number, l.start_time, l.end_time].join("|");
+    if (!byKey.has(key)) byKey.set(key, []);
+    byKey.get(key).push(l);
+  }
+  const slots = [];
+  for (const group of byKey.values()) {
+    const bySubgroup = group.length > 1 && group.every((l) => subgroupDigit(l.subgroup));
+    const parts = bySubgroup
+      ? [...group].sort((a, b) => subgroupDigit(a.subgroup).localeCompare(subgroupDigit(b.subgroup)))
+      : null;
+    if (parts) slots.push({ ...parts[0], parts });
+    else group.forEach((l) => slots.push({ ...l, parts: [l] }));
+  }
+  return slots.sort(byTime);
 }
 
 function byTime(a, b) {
@@ -471,7 +517,7 @@ function byTime(a, b) {
 function timingFor(lessons, isToday) {
   const result = new Map();
   if (!isToday) return result;
-  const now = new Date();
+  const now = yktNow();
   const nowMin = now.getHours() * 60 + now.getMinutes();
   let nextFound = false;
   for (const l of lessons) {
@@ -490,9 +536,7 @@ function timingFor(lessons, isToday) {
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
-function lessonCard(l, timing) {
-  // Время стопкой: начало над концом, как пишут в тетради.
-  const time = [l.start_time, l.end_time].filter(Boolean).join("\n") || "—";
+function lessonMeta(l) {
   const meta = [];
   if (state.mode === "teacher") {
     l.groups.forEach((g) => meta.push(`<li>${esc(g.group)}${g.room ? `, ауд. ${esc(g.room)}` : ""}</li>`));
@@ -500,22 +544,45 @@ function lessonCard(l, timing) {
     splitTeachers(l.teacher).forEach((t) => meta.push(`<li>${esc(t)}</li>`));
     if (l.classroom) meta.push(`<li>Аудитория ${esc(l.classroom)}</li>`);
   }
+  return meta.length ? `<ul class="lesson-meta">${meta.join("")}</ul>` : "";
+}
+
+function lessonChips(l, withSubgroup) {
   const chips = [];
   if (l.type) chips.push(l.type);
-  if (subgroupDigit(l.subgroup)) chips.push(`${subgroupDigit(l.subgroup)} подгруппа`);
+  if (withSubgroup && subgroupDigit(l.subgroup)) chips.push(`${subgroupDigit(l.subgroup)} подгруппа`);
   if (l.week_type) chips.push(l.week_type);
-  const tag = timing === "current" ? "Идёт сейчас" : timing === "next" ? "Следующая" : "";
+  return chips.length
+    ? `<div class="lesson-chips">${chips.map((c) => `<span class="chip-tag">${esc(c)}</span>`).join("")}</div>`
+    : "";
+}
 
-  return `
-    <article class="lesson ${timing ? "is-" + timing : ""}">
-      <span class="lesson-num" aria-label="${l.lesson_number} пара">${l.lesson_number > 0 ? l.lesson_number : ""}</span>
-      <span class="lesson-time">${esc(time)}</span>
-      <div class="lesson-body">
+function lessonCard(l, timing) {
+  // Время стопкой: начало над концом, как пишут в тетради.
+  const time = [l.start_time, l.end_time].filter(Boolean).join("\n") || "—";
+  const tag = timing === "current" ? "Идёт сейчас" : timing === "next" ? "Следующая" : "";
+  const parts = l.parts && l.parts.length > 1 ? l.parts : null;
+
+  const body = parts
+    ? (tag ? `<span class="state-tag state-tag-top">${tag}</span>` : "") +
+      parts.map((p) => `
+        <section class="lesson-part">
+          <span class="part-label">${subgroupDigit(p.subgroup)} подгруппа</span>
+          <h3 class="lesson-subject">${esc(p.subject || "Занятие")}</h3>
+          ${lessonMeta(p)}
+          ${lessonChips(p, false)}
+        </section>`).join("")
+    : `
         <h3 class="lesson-subject">${esc(l.subject || "Занятие")}</h3>
         ${tag ? `<span class="state-tag">${tag}</span>` : ""}
-        ${meta.length ? `<ul class="lesson-meta">${meta.join("")}</ul>` : ""}
-        ${chips.length ? `<div class="lesson-chips">${chips.map((c) => `<span class="chip-tag">${esc(c)}</span>`).join("")}</div>` : ""}
-      </div>
+        ${lessonMeta(l)}
+        ${lessonChips(l, true)}`;
+
+  return `
+    <article class="lesson ${timing ? "is-" + timing : ""} ${parts ? "is-split" : ""}">
+      <span class="lesson-num" aria-label="${l.lesson_number} пара">${l.lesson_number > 0 ? l.lesson_number : ""}</span>
+      <span class="lesson-time">${esc(time)}</span>
+      <div class="lesson-body">${body}</div>
     </article>`;
 }
 
@@ -544,7 +611,7 @@ function renderSubgroups() {
 }
 
 function render() {
-  const today = new Date();
+  const today = yktNow();
   const todayIso = iso(today);
   const weekEnd = addDays(state.weekStart, STUDY_DAYS - 1);
   const short = matchMedia("(max-width: 420px)").matches;

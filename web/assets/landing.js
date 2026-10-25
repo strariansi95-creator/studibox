@@ -7,6 +7,23 @@
 const bellsList = document.getElementById("bells-list");
 const bellsNow = document.getElementById("bells-now");
 
+/** Якутское время независимо от часового пояса устройства (как в schedule.js). */
+function yktNow() {
+  try {
+    const parts = Object.fromEntries(
+      new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Yakutsk",
+        year: "numeric", month: "numeric", day: "numeric",
+        hour: "numeric", minute: "numeric", second: "numeric",
+        hourCycle: "h23",
+      }).formatToParts(new Date()).map((p) => [p.type, p.value])
+    );
+    return new Date(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute, +parts.second);
+  } catch {
+    return new Date();
+  }
+}
+
 function toMinutes(hhmm) {
   const [h, m] = hhmm.split(":").map(Number);
   return h * 60 + m;
@@ -29,7 +46,7 @@ function duration(mins) {
 }
 
 function updateBells() {
-  const now = new Date();
+  const now = yktNow();
   const nowMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
   const rows = [...bellsList.children];
   const isSunday = now.getDay() === 0;

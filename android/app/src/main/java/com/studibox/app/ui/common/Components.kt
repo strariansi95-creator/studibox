@@ -49,11 +49,11 @@ import com.studibox.app.ui.theme.TimeTextStyle
 import com.studibox.app.ui.theme.colorForKey
 import com.studibox.app.util.SubgroupFormat
 
-private fun timeRange(start: String, end: String): String =
+internal fun timeRange(start: String, end: String): String =
     listOf(start, end).filter { it.isNotBlank() }.joinToString(" — ")
 
 /** Преподавателей в поле может быть несколько — они разделены запятой. */
-private fun teacherNames(raw: String): List<String> =
+internal fun teacherNames(raw: String): List<String> =
     raw.split(",").map { it.trim() }.filter { it.isNotBlank() }
 
 // ---------------------------------------------------------------- баннеры и состояния
@@ -185,7 +185,7 @@ fun OfflineState(
 
 /** Мелкая строка «иконка + текст» внутри карточки пары. */
 @Composable
-private fun LessonMetaRow(
+internal fun LessonMetaRow(
     icon: ImageVector,
     text: String,
     tint: Color,
@@ -322,7 +322,7 @@ fun LessonCard(
 
 /** Стрелка справа: по нажатию на карточку открываются лекции пары из СДО. */
 @Composable
-private fun OpenLessonHint() {
+internal fun OpenLessonHint() {
     Icon(
         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
         contentDescription = "Лекции",

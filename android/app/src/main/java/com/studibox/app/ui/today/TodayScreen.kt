@@ -49,6 +49,9 @@ import com.studibox.app.ui.common.TeacherLessonCard
 import com.studibox.app.ui.common.TeacherLessonSlot
 import com.studibox.app.ui.common.classifyLessons
 import com.studibox.app.ui.common.classifyTeacherSlots
+import com.studibox.app.ui.common.CurrentStudentSlotCard
+import com.studibox.app.ui.common.StudentSlotCard
+import com.studibox.app.ui.common.groupIntoSlots
 import com.studibox.app.ui.lms.DeadlineCard
 import com.studibox.app.ui.theme.AppShapes
 import com.studibox.app.ui.theme.Spacing
@@ -246,8 +249,10 @@ fun TodayScreen(
     }
 
     val states = remember(lessons) { classifyLessons(lessons, isToday = true) }
-    val current = lessons.filter { states[it.id] == LessonUiState.CURRENT }
-    val upcoming = lessons.filterNot { it in current }
+    // Пары разных подгрупп в одно время — одна карточка (см. StudentSlots.kt).
+    val slots = remember(lessons) { groupIntoSlots(lessons) }
+    val current = slots.filter { states[it.first.id] == LessonUiState.CURRENT }
+    val upcoming = slots.filterNot { it in current }
 
     LazyColumn(
         modifier = Modifier
@@ -289,8 +294,8 @@ fun TodayScreen(
                 )
             }
         } else {
-            items(current, key = { "cur-${it.id}" }) { lesson ->
-                CurrentLessonCard(lesson, onClick = { onOpenLesson(lesson.subject) })
+            items(current, key = { "cur-${it.id}" }) { slot ->
+                CurrentStudentSlotCard(slot, onOpenLesson = { onOpenLesson(it.subject) })
             }
 
             if (upcoming.isNotEmpty()) {
@@ -300,11 +305,11 @@ fun TodayScreen(
                         modifier = Modifier.padding(top = 8.dp)
                     )
                 }
-                items(upcoming, key = { "lesson-${it.id}" }) { lesson ->
-                    LessonCard(
-                        lesson,
-                        state = states[lesson.id] ?: LessonUiState.UPCOMING,
-                        onClick = { onOpenLesson(lesson.subject) }
+                items(upcoming, key = { "lesson-${it.id}" }) { slot ->
+                    StudentSlotCard(
+                        slot,
+                        state = states[slot.first.id] ?: LessonUiState.UPCOMING,
+                        onOpenLesson = { onOpenLesson(it.subject) }
                     )
                 }
             }

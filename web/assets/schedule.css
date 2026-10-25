@@ -236,6 +236,21 @@
 }
 
 .state-tag { display: block; margin-top: 2px; font-size: 13px; font-weight: 600; color: var(--ink); }
+.state-tag-top { margin: 0 0 6px; }
+
+/* Пара, поделённая на подгруппы: одно время, внутри части по подгруппам. */
+.lesson-part + .lesson-part {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--rule);
+}
+.part-label {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--margin);
+}
 
 /* Прошедшая — время вычеркнуто чернилами. */
 .lesson.is-past { color: var(--graphite-3); }

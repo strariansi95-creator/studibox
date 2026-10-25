@@ -56,6 +56,8 @@ import com.studibox.app.ui.common.SubgroupSelector
 import com.studibox.app.ui.common.TeacherLessonCard
 import com.studibox.app.ui.common.classifyLessons
 import com.studibox.app.ui.common.classifyTeacherSlots
+import com.studibox.app.ui.common.StudentSlotCard
+import com.studibox.app.ui.common.groupIntoSlots
 import com.studibox.app.ui.theme.AppShapes
 import com.studibox.app.ui.theme.Spacing
 import com.studibox.app.ui.theme.StudiboxTheme
@@ -95,6 +97,8 @@ fun ScheduleScreen(
     val today = LocalDate.now()
     val isToday = selectedDate == today
     val states = remember(lessons, isToday) { classifyLessons(lessons, isToday) }
+    // Пары разных подгрупп в одно время — одна карточка (см. StudentSlots.kt).
+    val slots = remember(lessons) { groupIntoSlots(lessons) }
     val teacherStates = remember(teacherSlots, isToday) { classifyTeacherSlots(teacherSlots, isToday) }
     val dates = if (isTeacher) teacherAvailableDates else availableDates
 
@@ -292,11 +296,11 @@ fun ScheduleScreen(
                     )
                 }
             } else {
-                items(lessons, key = { it.id }) { lesson ->
-                    LessonCard(
-                        lesson,
-                        state = states[lesson.id] ?: LessonUiState.UPCOMING,
-                        onClick = { onOpenLesson(lesson.subject) }
+                items(slots, key = { it.id }) { slot ->
+                    StudentSlotCard(
+                        slot,
+                        state = states[slot.first.id] ?: LessonUiState.UPCOMING,
+                        onOpenLesson = { onOpenLesson(it.subject) }
                     )
                 }
             }
