@@ -5,31 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Расписание — Студибокс</title>
   <meta name="description" content="Расписание СВФУ онлайн: пары группы или преподавателя на неделю.">
-  <meta name="theme-color" content="#635bff">
+  <meta name="theme-color" content="#3b39d4">
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/style.css">
   <link rel="stylesheet" href="assets/schedule.css">
 </head>
 <body>
 
 <header class="topbar">
-  <div class="container">
-    <a class="brand" href="./">
-      <span class="logo"><img src="assets/logo.svg" alt="" width="30" height="30"></span>
-      Студибокс
-    </a>
+  <div class="sheet">
+    <a class="brand" href="./"><img src="assets/logo.svg" alt="" width="34" height="34">Студибокс</a>
     <nav class="nav" aria-label="Основная навигация">
-      <a class="nav-extra" href="./#features">О приложении</a>
-      <a href="schedule.html" aria-current="page">Расписание</a>
+      <a class="nav-extra" href="./">О приложении</a>
+      <a href="schedule.html" aria-current="page">Расписание<span class="nav-long"> онлайн</span></a>
     </nav>
   </div>
 </header>
 
-<main class="container page">
-  <section class="controls card" aria-label="Выбор расписания">
+<main class="sheet page">
+  <h1 class="page-title">Расписание</h1>
+  <section class="controls" aria-label="Выбор расписания">
     <div class="segmented" role="tablist" aria-label="Чьё расписание">
       <button type="button" role="tab" data-mode="student" aria-selected="true">Студент</button>
       <button type="button" role="tab" data-mode="teacher" aria-selected="false">Преподаватель</button>
@@ -65,18 +63,15 @@
   <div id="status" class="status" role="status" aria-live="polite"></div>
   <div id="days" class="days"></div>
 
-  <aside class="app-promo card">
-    <div>
-      <b>В приложении удобнее</b>
-      <span class="muted">Напоминания о парах, лекции из СДО и работа без интернета.</span>
-    </div>
-    <a class="btn btn-primary" href="./#install">Скачать</a>
+  <aside class="app-promo">
+    <p>В приложении есть напоминания о парах, лекции из СДО и работа без интернета.</p>
+    <a class="btn btn-secondary" href="./#install">Установить приложение</a>
   </aside>
 </main>
 
 <footer class="footer">
-  <div class="container">
-    <span>Данные — из официального расписания СВФУ, обновляются каждые 30 минут</span>
+  <div class="sheet">
+    <span>Данные из официального расписания СВФУ, сервер проверяет его каждые 30 минут</span>
     <a href="https://github.com/strariansi95-creator/studibox">GitHub</a>
   </div>
 </footer>

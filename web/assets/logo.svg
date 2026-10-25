@@ -1,9 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="18 12 72 76">
-  <!-- Иконка приложения (res/drawable/ic_launcher_foreground.xml) -->
-  <path fill="#FFFFFF" d="M30,44 L78,44 L78,78 Q78,82 74,82 L34,82 Q30,82 30,78 Z"/>
-  <path fill="#9CC7F0" d="M27,35 L81,35 Q84,35 84,38 L84,45 Q84,48 81,48 L27,48 Q24,48 24,45 L24,38 Q24,35 27,35 Z"/>
-  <path fill="#FFD166" d="M54,18 L76,27 L54,36 L32,27 Z"/>
-  <path fill="#FFD166" d="M68,31 L68,39 Q68,44 54,44 Q40,44 40,39 L40,31 L54,37 Z"/>
-  <path fill="#123E6B" d="M38,56 L70,56 L70,60 L38,60 Z"/>
-  <path fill="#123E6B" d="M38,66 L60,66 L60,70 L38,70 Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108">
+  <!-- Иконка приложения (res/drawable/ic_launcher_foreground.xml) на чернильной плашке -->
+  <rect width="108" height="108" rx="26" fill="#3B39D4"/>
+  <g transform="translate(6 6) scale(.89)">
+    <path fill="#FFFFFF" d="M30,44 L78,44 L78,78 Q78,82 74,82 L34,82 Q30,82 30,78 Z"/>
+    <path fill="#9CC7F0" d="M27,35 L81,35 Q84,35 84,38 L84,45 Q84,48 81,48 L27,48 Q24,48 24,45 L24,38 Q24,35 27,35 Z"/>
+    <path fill="#FFD166" d="M54,18 L76,27 L54,36 L32,27 Z"/>
+    <path fill="#FFD166" d="M68,31 L68,39 Q68,44 54,44 Q40,44 40,39 L40,31 L54,37 Z"/>
+    <path fill="#123E6B" d="M38,56 L70,56 L70,60 L38,60 Z"/>
+    <path fill="#123E6B" d="M38,66 L60,66 L60,70 L38,70 Z"/>
+  </g>
 </svg>

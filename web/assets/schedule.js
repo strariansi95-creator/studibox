@@ -9,8 +9,6 @@ const DAY_SHORT = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 const DAY_FULL = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"];
 const MONTHS_SHORT = ["янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
 const MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
-// Цвета предметов — как SubjectAccents в приложении.
-const SUBJECT_COLORS = ["#7567ff", "#4f8cff", "#34c6a8", "#f2994a", "#eb5e8c", "#9b6bff"];
 
 const $ = (id) => document.getElementById(id);
 
@@ -186,12 +184,6 @@ function splitTeachers(raw) {
 function subgroupDigit(raw) {
   const m = /\d/.exec(raw || "");
   return m ? m[0] : "";
-}
-
-function colorFor(subject) {
-  let hash = 0;
-  for (const ch of subject) hash = (hash * 31 + ch.codePointAt(0)) & 0x7fffffff;
-  return SUBJECT_COLORS[hash % SUBJECT_COLORS.length];
 }
 
 // ------------------------------------------------------------------ состояние
@@ -499,31 +491,30 @@ function timingFor(lessons, isToday) {
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 function lessonCard(l, timing) {
-  const time = [l.start_time, l.end_time].filter(Boolean).join(" — ") || "Время не указано";
+  // Время стопкой: начало над концом, как пишут в тетради.
+  const time = [l.start_time, l.end_time].filter(Boolean).join("\n") || "—";
   const meta = [];
   if (state.mode === "teacher") {
-    l.groups.forEach((g) => meta.push(`<li><span class="k">👥</span>${esc(g.group)}${g.room ? ` · ауд. ${esc(g.room)}` : ""}</li>`));
+    l.groups.forEach((g) => meta.push(`<li>${esc(g.group)}${g.room ? `, ауд. ${esc(g.room)}` : ""}</li>`));
   } else {
-    splitTeachers(l.teacher).forEach((t) => meta.push(`<li><span class="k">👤</span>${esc(t)}</li>`));
-    if (l.classroom) meta.push(`<li><span class="k">📍</span>Ауд. ${esc(l.classroom)}</li>`);
+    splitTeachers(l.teacher).forEach((t) => meta.push(`<li>${esc(t)}</li>`));
+    if (l.classroom) meta.push(`<li>Аудитория ${esc(l.classroom)}</li>`);
   }
   const chips = [];
   if (l.type) chips.push(l.type);
   if (subgroupDigit(l.subgroup)) chips.push(`${subgroupDigit(l.subgroup)} подгруппа`);
   if (l.week_type) chips.push(l.week_type);
-  const tag = timing === "current" ? "сейчас" : timing === "next" ? "далее" : "";
+  const tag = timing === "current" ? "Идёт сейчас" : timing === "next" ? "Следующая" : "";
 
   return `
-    <article class="lesson ${timing ? "is-" + timing : ""}" style="--c:${colorFor(l.subject || "")}">
-      <span class="bar" aria-hidden="true"></span>
-      <div>
-        <div class="lesson-top">
-          <span class="lesson-time">${esc(time)} ${tag ? `<span class="state-tag">${tag}</span>` : ""}</span>
-          ${l.lesson_number > 0 ? `<span class="lesson-num">${l.lesson_number} пара</span>` : ""}
-        </div>
+    <article class="lesson ${timing ? "is-" + timing : ""}">
+      <span class="lesson-num" aria-label="${l.lesson_number} пара">${l.lesson_number > 0 ? l.lesson_number : ""}</span>
+      <span class="lesson-time">${esc(time)}</span>
+      <div class="lesson-body">
         <h3 class="lesson-subject">${esc(l.subject || "Занятие")}</h3>
+        ${tag ? `<span class="state-tag">${tag}</span>` : ""}
         ${meta.length ? `<ul class="lesson-meta">${meta.join("")}</ul>` : ""}
-        ${chips.length ? `<div class="lesson-chips">${chips.map((c) => `<span class="badge">${esc(c)}</span>`).join("")}</div>` : ""}
+        ${chips.length ? `<div class="lesson-chips">${chips.map((c) => `<span class="chip-tag">${esc(c)}</span>`).join("")}</div>` : ""}
       </div>
     </article>`;
 }
@@ -597,7 +588,7 @@ function render() {
         : `<div class="day-empty">${!hasData ? "Расписание пока недоступно" : anyLessons ? "Пар нет" : "На этой неделе пар нет"}</div>`;
       return `
         <section class="day ${d.isToday ? "is-today" : ""} ${d.i === state.selectedDay ? "is-selected" : ""}">
-          <h2>${DAY_FULL[d.i]} <small>${humanDate(d.date)}${d.isToday ? " · сегодня" : ""}</small></h2>
+          <h2>${DAY_FULL[d.i]} <small>${humanDate(d.date)}${d.isToday ? ", сегодня" : ""}</small></h2>
           ${body}
         </section>`;
     })

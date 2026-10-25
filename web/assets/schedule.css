@@ -1,71 +1,75 @@
-/* Веб-расписание */
+/* Веб-расписание: день — лист в линейку, пара — строка. */
 
-.page { padding-top: 20px; }
+.page { padding-top: calc(var(--cell) * 2); }
+
+.page-title {
+  margin: 0 0 var(--cell);
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(34px, 5vw, 52px);
+  letter-spacing: -.03em;
+  line-height: 1.05;
+  color: var(--ink);
+}
 
 /* ---------------------------------------------------- выбор группы / ФИО */
 
 .controls {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 12px 16px;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px 24px;
   align-items: center;
-  padding: 14px;
 }
 .subgroups { grid-column: 1 / -1; }
 
-.segmented {
-  display: inline-flex;
-  padding: 4px;
-  gap: 4px;
-  border-radius: 14px;
-  background: var(--surface-variant);
-  border: 1px solid var(--outline);
-}
+/* Режим — две вкладки с чернильным подчёркиванием, как в шапке. */
+.segmented { display: inline-flex; gap: 4px; }
 .segmented button {
   border: 0;
-  background: transparent;
-  color: var(--text-2);
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--graphite-2);
   font: inherit;
-  font-weight: 700;
-  font-size: 14px;
-  padding: 9px 16px;
-  border-radius: 10px;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 10px 10px 8px;
   cursor: pointer;
-  transition: background .18s, color .18s;
 }
-.segmented button[aria-selected="true"] { background: var(--accent); color: #fff; }
+.segmented button:hover { color: var(--graphite); }
+.segmented button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
 
-.picker { position: relative; min-width: 0; }
+.picker { position: relative; min-width: 0; max-width: 560px; }
 .picker-field {
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 48px;
+  height: 52px;
   padding: 0 12px 0 14px;
-  border-radius: 14px;
-  border: 1px solid var(--outline-strong);
-  background: var(--bg-elevated);
-  transition: border-color .15s, box-shadow .15s;
+  border-radius: 10px;
+  border: 2px solid var(--rule);
+  background: var(--paper-raised);
+  transition: border-color .15s;
 }
-.picker-field:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-container); }
-.picker-field svg { width: 20px; height: 20px; color: var(--text-3); flex: none; }
+.picker-field:focus-within { border-color: var(--ink); }
+.picker-field svg { width: 20px; height: 20px; color: var(--graphite-3); flex: none; }
 .picker-field input {
   flex: 1;
   min-width: 0;
   border: 0;
   outline: 0;
   background: transparent;
-  color: var(--text);
+  color: var(--graphite);
   font: inherit;
   font-weight: 600;
+  font-size: 17px;
 }
-.picker-field input::placeholder { color: var(--text-3); font-weight: 500; }
+.picker-field input::placeholder { color: var(--graphite-3); font-weight: 400; }
 .picker-clear {
   border: 0;
-  background: var(--surface-variant);
-  color: var(--text-2);
-  width: 26px;
-  height: 26px;
+  background: var(--ink-soft);
+  color: var(--ink);
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   font-size: 18px;
   line-height: 1;
@@ -83,35 +87,31 @@
   margin: 0;
   padding: 6px;
   list-style: none;
-  background: var(--bg-elevated);
-  border: 1px solid var(--outline);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
-}
-.picker-list li {
-  padding: 10px 12px;
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
   border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
+  box-shadow: 6px 6px 0 var(--ink-soft);
 }
-.picker-list li[aria-selected="true"], .picker-list li:hover { background: var(--accent-container); color: var(--on-accent-container); }
-.picker-list .empty { color: var(--text-3); cursor: default; font-weight: 500; }
-.picker-list .empty:hover { background: none; color: var(--text-3); }
+.picker-list li { padding: 10px 12px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+.picker-list li[aria-selected="true"], .picker-list li:hover { background: var(--ink-soft); color: var(--ink); }
+.picker-list .empty, .picker-list .empty:hover { color: var(--graphite-3); background: none; cursor: default; }
 
 .subgroups { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.subgroups span { color: var(--text-3); font-size: 13px; font-weight: 600; margin-right: 4px; }
+.subgroups span { color: var(--graphite-2); font-size: 15px; margin-right: 4px; }
 .chip {
-  border: 1px solid var(--outline);
-  background: var(--surface-variant);
-  color: var(--text-2);
+  border: 2px solid var(--rule);
+  background: var(--paper-raised);
+  color: var(--graphite);
   font: inherit;
-  font-weight: 700;
-  font-size: 13px;
-  padding: 7px 14px;
-  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  min-width: 44px;
+  padding: 6px 14px;
+  border-radius: 8px;
   cursor: pointer;
 }
-.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chip:hover { border-color: var(--ink); }
+.chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
 
 /* ---------------------------------------------------- неделя */
 
@@ -119,32 +119,31 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 12px;
-  margin: 18px 0 12px;
+  gap: 8px 16px;
+  margin: calc(var(--cell) * 1.5) 0 var(--cell);
 }
-.week {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 14px;
-  background: var(--surface-variant);
-  border: 1px solid var(--outline);
+.week { display: inline-flex; align-items: center; gap: 2px; }
+.week-label {
+  min-width: 240px;
+  text-align: center;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -.01em;
 }
-.week-label { min-width: 190px; text-align: center; font-weight: 700; font-size: 14px; }
 .icon-btn {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 8px;
   background: transparent;
-  color: var(--text-2);
-  font-size: 22px;
+  color: var(--ink);
+  font-size: 26px;
   line-height: 1;
   cursor: pointer;
 }
-.icon-btn:hover { background: var(--surface); color: var(--text); }
-.updated { margin-left: auto; font-size: 13px; }
+.icon-btn:hover { background: var(--ink-soft); }
+.updated { margin-left: auto; font-size: 14px; }
 
 /* ---------------------------------------------------- дни */
 
@@ -152,121 +151,179 @@
 
 .days {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: calc(var(--cell) * 1.5) var(--cell);
   align-items: start;
 }
 
 .day h2 {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 4px 10px;
   margin: 0 0 10px;
-  padding: 0 4px;
-  font-size: 17px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 19px;
   letter-spacing: -.01em;
 }
-.day h2 small { color: var(--text-3); font-size: 13px; font-weight: 600; }
-.day.is-today h2 { color: var(--accent); }
-.day-empty {
-  padding: 18px;
-  border: 1px dashed var(--outline-strong);
-  border-radius: var(--radius);
-  color: var(--text-3);
-  font-size: 14px;
-  text-align: center;
-}
-.day-list { display: grid; gap: 10px; }
+.day h2 small { font-family: var(--text); color: var(--graphite-2); font-size: 15px; font-weight: 500; letter-spacing: 0; }
+.day.is-today h2 { color: var(--ink); }
 
-/* ---------------------------------------------------- карточка пары */
+/* Лист дня: пары — строки, разделённые линейкой. */
+.day-list,
+.day-empty {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+}
+.day.is-today .day-list { box-shadow: 6px 6px 0 var(--ink-soft); border-color: color-mix(in srgb, var(--ink) 35%, var(--rule)); }
+.day-empty { padding: 18px; color: var(--graphite-3); }
+
+/* ---------------------------------------------------- пара */
 
 .lesson {
-  position: relative;
   display: grid;
-  grid-template-columns: 4px 1fr;
-  gap: 12px;
-  padding: 14px;
-  background: var(--surface);
-  border: 1px solid var(--outline);
-  border-radius: var(--radius);
+  grid-template-columns: 1.4em 4.6em minmax(0, 1fr);
+  gap: 0 12px;
+  padding: 14px 16px 14px 12px;
+  border-top: 1px solid var(--rule);
 }
-.lesson .bar { border-radius: 4px; background: var(--c, var(--accent)); min-height: 44px; }
-.lesson.is-past { opacity: .55; }
-.lesson.is-current { background: var(--surface-variant); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
-.lesson.is-current .bar { background: var(--accent); }
-.lesson.is-next .bar { background: var(--success); }
+.lesson:first-child { border-top: 0; }
+.lesson .bar { display: none; }
 
-.lesson-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.lesson-time { font-weight: 800; font-size: 15px; font-variant-numeric: tabular-nums; }
-.lesson.is-current .lesson-time { color: var(--accent); }
-.lesson-num { color: var(--text-3); font-size: 12px; font-weight: 600; white-space: nowrap; }
-.lesson-subject { margin: 4px 0 0; font-size: 16px; font-weight: 700; line-height: 1.3; }
-.lesson-meta { margin: 6px 0 0; padding: 0; list-style: none; color: var(--text-2); font-size: 14px; }
-.lesson-meta li { display: flex; gap: 6px; align-items: baseline; }
-.lesson-meta li + li { margin-top: 2px; }
-.lesson-meta .k { color: var(--text-3); flex: none; }
-.lesson-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-.state-tag {
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 10px;
+.lesson-num {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  font-family: var(--display);
   font-weight: 800;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  background: var(--accent);
-  color: #fff;
+  font-size: 17px;
+  color: var(--margin);
+  text-align: right;
+  line-height: 1.5;
 }
-.lesson.is-next .state-tag { background: var(--success); }
+.lesson-time {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  position: relative;
+  align-self: start;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  white-space: pre-line;
+  isolation: isolate;
+}
+.lesson-body { grid-column: 3; min-width: 0; }
+
+.lesson-subject {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.lesson-meta { margin: 4px 0 0; padding: 0; list-style: none; color: var(--graphite-2); font-size: 15px; }
+.lesson-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chip-tag {
+  padding: 1px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--rule);
+  color: var(--graphite-2);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.state-tag { display: block; margin-top: 2px; font-size: 13px; font-weight: 600; color: var(--ink); }
+
+/* Прошедшая — время вычеркнуто чернилами. */
+.lesson.is-past { color: var(--graphite-3); }
+.lesson.is-past .lesson-subject { color: var(--graphite-2); font-weight: 500; }
+.lesson.is-past .lesson-time::after {
+  content: "";
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  top: 50%;
+  height: 2px;
+  background: var(--ink);
+  opacity: .7;
+  border-radius: 2px;
+  transform: rotate(-8deg);
+}
+
+/* Текущая — время закрашено маркером. */
+.lesson.is-current .lesson-time { font-weight: 700; color: var(--marker-text); }
+.lesson.is-current .lesson-time::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -2px -6px;
+  background: var(--marker);
+  border-radius: 3px 8px 5px 2px;
+  transform: skewX(-6deg);
+}
+@media (prefers-color-scheme: dark) {
+  .lesson.is-current .lesson-time { color: var(--graphite); }
+  .lesson.is-current .lesson-time::before { inset: auto -4px -3px; height: 5px; }
+}
 
 /* ---------------------------------------------------- состояния */
 
 .status:empty { display: none; }
 .status {
   display: grid;
-  justify-items: center;
-  gap: 12px;
-  padding: 48px 16px;
-  text-align: center;
-  color: var(--text-2);
+  justify-items: start;
+  gap: 8px;
+  padding: var(--cell) 0 calc(var(--cell) * 2);
+  color: var(--graphite-2);
+  max-width: 34em;
 }
-.status b { color: var(--text); font-size: 18px; }
+.status b { color: var(--graphite); font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: -.01em; }
+.status .btn { margin-top: 8px; }
 .status .progress {
-  width: min(320px, 80%);
-  height: 6px;
-  border-radius: 6px;
-  background: var(--surface-variant);
+  width: min(360px, 100%);
+  height: 8px;
+  border-radius: 4px;
+  background: var(--ink-soft);
   overflow: hidden;
 }
-.status .progress span { display: block; height: 100%; width: 0; background: var(--gradient); transition: width .2s; }
+.status .progress span { display: block; height: 100%; width: 0; background: var(--ink); transition: width .25s; }
 .spinner {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  border: 3px solid var(--accent-container);
-  border-top-color: var(--accent);
+  border: 3px solid var(--ink-soft);
+  border-top-color: var(--ink);
   animation: spin .8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .skeleton {
-  height: 96px;
-  border-radius: var(--radius);
-  background: linear-gradient(90deg, var(--surface) 25%, var(--surface-variant) 50%, var(--surface) 75%);
-  background-size: 200% 100%;
-  border: 1px solid var(--outline);
-  animation: shimmer 1.2s infinite;
+  height: 168px;
+  border-radius: 6px;
+  border: 1px solid var(--rule);
+  background:
+    repeating-linear-gradient(transparent 0 55px, var(--rule) 55px 56px),
+    var(--paper-raised);
+  opacity: .8;
+  animation: breathe 1.4s ease-in-out infinite alternate;
 }
-@keyframes shimmer { to { background-position: -200% 0; } }
+@keyframes breathe { to { opacity: .45; } }
 
 .app-promo {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-top: 28px;
-  padding: 16px 18px;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin-top: calc(var(--cell) * 2);
+  padding: 14px 18px;
+  border-left: 3px solid var(--ink);
+  background: var(--paper-raised);
 }
-.app-promo div { display: flex; flex-direction: column; }
+.app-promo p { margin: 0; max-width: 40em; }
 
 /* ---------------------------------------------------- телефон */
 
@@ -274,8 +331,9 @@
   .controls { grid-template-columns: 1fr; }
   .segmented { display: flex; }
   .segmented button { flex: 1; }
+  .toolbar { margin-top: var(--cell); }
   .week { flex: 1; justify-content: space-between; }
-  .week-label { min-width: 0; }
+  .week-label { min-width: 0; font-size: 15px; }
   .updated { width: 100%; margin-left: 0; }
 
   .day-tabs {
@@ -285,29 +343,30 @@
     margin-bottom: 14px;
   }
   .day-tab {
+    position: relative;
     display: grid;
     justify-items: center;
-    gap: 2px;
-    padding: 8px 0 7px;
-    border: 0;
-    border-radius: 12px;
-    background: var(--surface-variant);
-    color: var(--text-2);
+    gap: 1px;
+    padding: 7px 0 9px;
+    border: 2px solid var(--rule);
+    border-radius: 8px;
+    background: var(--paper-raised);
+    color: var(--graphite-2);
     font: inherit;
     cursor: pointer;
   }
-  .day-tab small { font-size: 11px; font-weight: 600; }
-  .day-tab b { font-size: 16px; }
-  .day-tab i { width: 4px; height: 4px; border-radius: 50%; background: transparent; }
-  .day-tab.has-lessons i { background: var(--accent); }
-  .day-tab.is-today { background: var(--accent-container); color: var(--on-accent-container); }
-  .day-tab[aria-selected="true"] { background: var(--accent); color: #fff; }
-  .day-tab[aria-selected="true"] i { background: #fff; }
+  .day-tab small { font-size: 12px; font-weight: 500; }
+  .day-tab b { font-family: var(--display); font-size: 16px; font-weight: 700; color: var(--graphite); }
+  .day-tab i { width: 5px; height: 5px; border-radius: 50%; background: transparent; }
+  .day-tab.has-lessons i { background: var(--margin); }
+  .day-tab.is-today { border-color: var(--ink); }
+  .day-tab[aria-selected="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .day-tab[aria-selected="true"] b { color: var(--paper); }
+  .day-tab[aria-selected="true"] i { background: var(--paper); }
 
   .days { display: block; }
   .day { display: none; }
   .day.is-selected { display: block; }
   .day h2 { display: none; }
-
-  .app-promo { flex-direction: column; align-items: stretch; }
+  .lesson { grid-template-columns: 1.2em 4.2em minmax(0, 1fr); gap: 0 10px; padding-right: 12px; }
 }
