@@ -97,6 +97,8 @@ fun ScheduleScreen(
 
     val today = LocalDate.now()
     val isToday = selectedDate == today
+    // День, на который ведёт «Сегодня»: в воскресенье это уже понедельник (см. ScheduleViewModel).
+    val homeDate = if (today.dayOfWeek == java.time.DayOfWeek.SUNDAY) today.plusDays(1) else today
     val states = remember(lessons, isToday) { classifyLessons(lessons, isToday) }
     // Пары разных подгрупп в одно время — одна карточка (см. StudentSlots.kt).
     val slots = remember(lessons) { groupIntoSlots(lessons) }
@@ -127,7 +129,7 @@ fun ScheduleScreen(
                     color = colors.textPrimary
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (!isToday) {
+                    if (selectedDate != homeDate) {
                         Text(
                             text = "Сегодня",
                             style = MaterialTheme.typography.labelLarge,

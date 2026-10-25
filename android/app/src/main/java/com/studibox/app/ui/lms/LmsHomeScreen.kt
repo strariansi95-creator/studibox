@@ -152,7 +152,7 @@ fun LmsHomeScreen(
                             color = colors.textPrimary
                         )
                         Text(
-                            text = if (isTeacher) "Преподаватель · СДО" else "Студент · СДО",
+                            text = if (isTeacher) "Преподаватель, вход в СДО выполнен" else "Студент, вход в СДО выполнен",
                             style = MaterialTheme.typography.bodySmall,
                             color = colors.textSecondary,
                             modifier = Modifier.padding(top = 2.dp)
@@ -254,7 +254,7 @@ private fun LazyListScope.downloadsSection(
 ) {
     if (downloads.isEmpty()) return
     item(key = "downloads-title") {
-        SectionTitle("Скачанные лекции · ${formatSize(downloads.sumOf { it.sizeBytes })}")
+        SectionTitle("Скачанные лекции, ${formatSize(downloads.sumOf { it.sizeBytes })}")
     }
     downloads.groupBy { it.courseName }.forEach { (courseName, lectures) ->
         item(key = "downloads-course-${lectures.first().courseId}") {

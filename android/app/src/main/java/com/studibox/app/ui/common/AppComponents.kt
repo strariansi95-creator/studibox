@@ -567,11 +567,11 @@ fun ReminderMinutesSelector(
 
 /** Разделитель внутри карточки настроек. */
 @Composable
-fun AppRowDivider(modifier: Modifier = Modifier) {
+fun AppRowDivider(modifier: Modifier = Modifier, inset: androidx.compose.ui.unit.Dp = 62.dp) {
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 62.dp)
+            .padding(start = inset)
             .height(1.dp)
             .background(StudiboxTheme.colors.outline)
     )

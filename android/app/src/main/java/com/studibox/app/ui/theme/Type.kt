@@ -42,9 +42,9 @@ val StudiboxTypography = Typography(
     headlineLarge = TextStyle(
         fontFamily = DisplayFontFamily,
         fontWeight = FontWeight.ExtraBold,
-        fontSize = 30.sp,
-        lineHeight = 34.sp,
-        letterSpacing = (-0.8).sp
+        fontSize = 25.sp,
+        lineHeight = 30.sp,
+        letterSpacing = (-0.6).sp
     ),
     headlineMedium = TextStyle(
         fontFamily = DisplayFontFamily,

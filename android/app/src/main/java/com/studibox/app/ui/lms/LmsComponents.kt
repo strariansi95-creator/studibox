@@ -102,7 +102,7 @@ private fun iconFor(mimeType: String, modName: String): ImageVector = when {
 
 private fun moduleKind(module: LmsModule): String = when (module.modName) {
     "resource" -> "Файл"
-    "folder" -> "Папка · ${module.files.size} файл."
+    "folder" -> "Папка, файлов: ${module.files.size}"
     "url" -> "Ссылка"
     "page" -> "Страница"
     "book" -> "Книга"
@@ -383,7 +383,7 @@ fun DeadlineCard(assignment: com.studibox.app.data.remote.LmsAssignment, showCou
                     val dueText = java.time.Instant.ofEpochSecond(due)
                         .atZone(java.time.ZoneId.systemDefault()).format(deadlineFormat)
                     Text(
-                        text = "До $dueText · ${timeLeft(due)}",
+                        text = "До $dueText, ${timeLeft(due)}",
                         style = MaterialTheme.typography.labelMedium,
                         color = accent,
                         modifier = Modifier.padding(top = 4.dp)

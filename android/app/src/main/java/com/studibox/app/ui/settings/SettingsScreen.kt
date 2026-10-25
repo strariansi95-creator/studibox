@@ -316,7 +316,7 @@ fun SettingsScreen(
         }
 
         Text(
-            text = "Студибокс · версия ${BuildConfig.VERSION_NAME}",
+            text = "Студибокс, версия ${BuildConfig.VERSION_NAME}",
             style = MaterialTheme.typography.labelSmall,
             color = colors.textTertiary,
             textAlign = TextAlign.Center,

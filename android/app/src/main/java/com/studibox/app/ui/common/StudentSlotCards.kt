@@ -146,7 +146,7 @@ private fun SubgroupSlotCard(
         }
 
         slot.lessons.forEachIndexed { index, lesson ->
-            if (index > 0) AppRowDivider(Modifier.padding(start = 40.dp))
+            if (index > 0) AppRowDivider(Modifier.padding(start = 40.dp, end = 14.dp), inset = 0.dp)
             SubgroupPart(
                 lesson = lesson,
                 past = state == LessonUiState.PAST,
@@ -202,7 +202,7 @@ private fun CurrentSubgroupSlotCard(
         }
 
         slot.lessons.forEachIndexed { index, lesson ->
-            if (index > 0) AppRowDivider(Modifier.padding(horizontal = Spacing.cardPaddingLarge))
+            if (index > 0) AppRowDivider(Modifier.padding(horizontal = Spacing.cardPaddingLarge), inset = 0.dp)
             SubgroupPart(
                 lesson = lesson,
                 past = false,

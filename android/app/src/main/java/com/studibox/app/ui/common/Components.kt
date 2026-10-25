@@ -579,7 +579,7 @@ fun TeacherLessonCard(
                 // Несколько групп на одной паре — перечисляем внутри ОДНОЙ карточки.
                 slot.groups.forEach { groupRoom ->
                     val text = if (groupRoom.classroom.isNotBlank()) {
-                        "${groupRoom.group} · ауд. ${groupRoom.classroom}"
+                        "${groupRoom.group}, ауд. ${groupRoom.classroom}"
                     } else {
                         groupRoom.group
                     }

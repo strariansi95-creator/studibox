@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -46,6 +47,7 @@ import com.studibox.app.ui.onboarding.RolePickerScreen
 import com.studibox.app.ui.schedule.ScheduleScreen
 import com.studibox.app.ui.settings.SettingsScreen
 import com.studibox.app.ui.teacher.TeacherPickerScreen
+import com.studibox.app.ui.theme.AppShapes
 import com.studibox.app.ui.theme.StudiboxTheme
 import com.studibox.app.ui.today.TodayScreen
 
@@ -163,7 +165,18 @@ fun StudiboxNavHost(appViewModel: AppViewModel) {
 
     Scaffold(
         containerColor = StudiboxTheme.colors.background,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        // Плашка в тетрадном стиле: чернила вместо стандартной чёрной.
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    shape = AppShapes.card,
+                    containerColor = StudiboxTheme.colors.accent,
+                    contentColor = StudiboxTheme.colors.textOnAccent,
+                    actionColor = StudiboxTheme.colors.textOnAccent
+                )
+            }
+        },
         bottomBar = {
             if (showBottomBar) {
                 AppBottomBar(

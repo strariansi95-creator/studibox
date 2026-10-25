@@ -26,14 +26,19 @@ class ScheduleViewModel : ViewModel() {
     private val scheduleRepo = AppGraph.scheduleRepository
     private val notesRepo = AppGraph.notesRepository
 
+    /**
+     * В воскресенье учебная неделя уже закончилась — открываем следующую
+     * (так же, как сайт). В остальные дни — текущую.
+     */
+    private fun studyDate(): LocalDate =
+        LocalDate.now().let { if (DateUtils.dayOfWeek(it) == 7) it.plusDays(1) else it }
+
     /** Понедельник отображаемой недели. */
-    private val _weekStart = MutableStateFlow(DateUtils.weekStart(LocalDate.now()))
+    private val _weekStart = MutableStateFlow(DateUtils.weekStart(studyDate()))
     val weekStart: StateFlow<LocalDate> = _weekStart.asStateFlow()
 
     /** Выбранный день недели: 1=ПН ... 6=СБ. Воскресенье не выбирается вручную. */
-    private val _selectedDayOfWeek = MutableStateFlow(
-        DateUtils.dayOfWeek(LocalDate.now()).let { if (it == 7) 1 else it }
-    )
+    private val _selectedDayOfWeek = MutableStateFlow(DateUtils.dayOfWeek(studyDate()))
     val selectedDayOfWeek: StateFlow<Int> = _selectedDayOfWeek.asStateFlow()
 
     /**
@@ -46,8 +51,7 @@ class ScheduleViewModel : ViewModel() {
         }.stateIn(
             viewModelScope,
             SharingStarted.Eagerly,
-            DateUtils.weekStart(LocalDate.now())
-                .plusDays((DateUtils.dayOfWeek(LocalDate.now()).coerceAtMost(6) - 1).toLong())
+            studyDate()
         )
 
     val group: StateFlow<String?> = AppGraph.settings.settings
@@ -142,9 +146,9 @@ class ScheduleViewModel : ViewModel() {
     }
 
     fun goToToday() {
-        val now = LocalDate.now()
-        _weekStart.value = DateUtils.weekStart(now)
-        _selectedDayOfWeek.value = DateUtils.dayOfWeek(now)
+        val date = studyDate()
+        _weekStart.value = DateUtils.weekStart(date)
+        _selectedDayOfWeek.value = DateUtils.dayOfWeek(date)
     }
 
     fun deleteNote(id: Long) {
