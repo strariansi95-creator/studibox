@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Расписание — Студибокс</title>
+  <meta name="description" content="Расписание СВФУ онлайн: пары группы или преподавателя на неделю.">
+  <meta name="theme-color" content="#635bff">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/schedule.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container">
+    <a class="brand" href="./">
+      <span class="logo"><img src="assets/logo.svg" alt="" width="30" height="30"></span>
+      Студибокс
+    </a>
+    <nav class="nav" aria-label="Основная навигация">
+      <a class="nav-extra" href="./#features">О приложении</a>
+      <a href="schedule.html" aria-current="page">Расписание</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container page">
+  <section class="controls card" aria-label="Выбор расписания">
+    <div class="segmented" role="tablist" aria-label="Чьё расписание">
+      <button type="button" role="tab" data-mode="student" aria-selected="true">Студент</button>
+      <button type="button" role="tab" data-mode="teacher" aria-selected="false">Преподаватель</button>
+    </div>
+
+    <div class="picker">
+      <label class="visually-hidden" for="picker-input" id="picker-label">Группа</label>
+      <div class="picker-field">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 3a7 7 0 0 1 5.6 11.2l5.1 5.1-1.4 1.4-5.1-5.1A7 7 0 1 1 10 3Zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z"/></svg>
+        <input id="picker-input" type="text" autocomplete="off" spellcheck="false"
+               role="combobox" aria-expanded="false" aria-controls="picker-list" aria-autocomplete="list"
+               placeholder="Найдите свою группу">
+        <button type="button" class="picker-clear" id="picker-clear" aria-label="Очистить" hidden>×</button>
+      </div>
+      <ul class="picker-list" id="picker-list" role="listbox" hidden></ul>
+    </div>
+
+    <div class="subgroups" id="subgroups" role="group" aria-label="Подгруппа" hidden></div>
+  </section>
+
+  <section class="toolbar" aria-label="Неделя">
+    <div class="week">
+      <button type="button" class="icon-btn" id="prev-week" aria-label="Предыдущая неделя">‹</button>
+      <span id="week-label" class="week-label"></span>
+      <button type="button" class="icon-btn" id="next-week" aria-label="Следующая неделя">›</button>
+    </div>
+    <button type="button" class="btn btn-ghost" id="today-btn" hidden>Сегодня</button>
+    <span class="updated muted" id="updated"></span>
+  </section>
+
+  <nav class="day-tabs" id="day-tabs" aria-label="День недели"></nav>
+
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+  <div id="days" class="days"></div>
+
+  <aside class="app-promo card">
+    <div>
+      <b>В приложении удобнее</b>
+      <span class="muted">Напоминания о парах, лекции из СДО и работа без интернета.</span>
+    </div>
+    <a class="btn btn-primary" href="./#install">Скачать</a>
+  </aside>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <span>Данные — из официального расписания СВФУ, обновляются каждые 30 минут</span>
+    <a href="https://github.com/strariansi95-creator/studibox">GitHub</a>
+  </div>
+</footer>
+
+<script src="assets/schedule.js" defer></script>
+</body>
+</html>

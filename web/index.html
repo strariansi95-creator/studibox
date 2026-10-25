@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Студибокс — расписание СВФУ</title>
+  <meta name="description" content="Расписание СВФУ для студентов и преподавателей, лекции и сроки сдачи из СДО — в одном приложении для Android.">
+  <meta name="theme-color" content="#635bff">
+  <meta property="og:title" content="Студибокс — расписание СВФУ">
+  <meta property="og:description" content="Расписание, лекции и дедлайны СДО СВФУ в одном приложении.">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/landing.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container">
+    <a class="brand" href="./">
+      <span class="logo"><img src="assets/logo.svg" alt="" width="30" height="30"></span>
+      Студибокс
+    </a>
+    <nav class="nav" aria-label="Основная навигация">
+      <a class="nav-extra" href="#features">Возможности</a>
+      <a class="nav-extra" href="#install">Установка</a>
+      <a href="schedule.html">Расписание</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- ======================================================== hero -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <span class="badge">Для студентов и преподавателей СВФУ</span>
+        <h1>Расписание, лекции и&nbsp;дедлайны — в&nbsp;одном приложении</h1>
+        <p class="lead">
+          Студибокс показывает пары вашей группы или преподавателя, напоминает о&nbsp;них
+          и открывает лекции из СДО СВФУ по одному нажатию на пару.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" id="download-btn" href="https://github.com/strariansi95-creator/studibox/releases/latest">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 16 6.5 10.5l1.4-1.4 3.1 3.1V3h2v9.2l3.1-3.1 1.4 1.4L12 16Zm-7 4v-2h14v2H5Z"/></svg>
+            <span>Скачать для Android</span>
+          </a>
+          <a class="btn btn-secondary" href="schedule.html">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2V2Zm12 8H5v10h14V10Z"/></svg>
+            <span>Расписание онлайн</span>
+          </a>
+        </div>
+        <p class="release-meta" id="release-meta">Бесплатно · без рекламы · Android 8.0 и новее</p>
+      </div>
+
+      <!-- Макет экрана «Сегодня» — нарисован вёрсткой, не картинкой -->
+      <div class="phone" aria-hidden="true">
+        <div class="phone-screen">
+          <div class="ph-top">
+            <span class="ph-logo"></span><b>Студибокс</b>
+          </div>
+          <div class="ph-hello">Доброе утро</div>
+          <span class="ph-chip">КИТ-ИСИП-24-1</span>
+          <div class="ph-now">
+            <span class="ph-now-label">СЕЙЧАС</span>
+            <div class="ph-now-time">10:00 — 11:35</div>
+            <div class="ph-now-subject">Технология разработки ПО</div>
+            <div class="ph-now-meta">Алексеева И.А. · ауд. 10</div>
+            <div class="ph-progress"><span></span></div>
+          </div>
+          <div class="ph-section">Остальные пары</div>
+          <div class="ph-card"><i style="background:#34c6a8"></i><div><b>11:50 — 13:25</b><span>Базы данных</span></div><em>›</em></div>
+          <div class="ph-card"><i style="background:#f2994a"></i><div><b>14:10 — 15:45</b><span>Английский язык</span></div><em>›</em></div>
+          <div class="ph-section">Сроки сдачи</div>
+          <div class="ph-card ph-deadline"><i style="background:#ff6b6b"></i><div><b>Лабораторная №4</b><span>До 26 октября, 23:59 · завтра</span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== возможности -->
+  <section class="section" id="features">
+    <div class="container">
+      <h2>Что умеет Студибокс</h2>
+      <p class="section-lead">Всё, что нужно на учёбе каждый день, без поиска таблиц и вкладок.</p>
+
+      <div class="features">
+        <article class="feature card">
+          <span class="f-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2V2Zm12 8H5v10h14V10Zm-9 2h4v4h-4v-4Z"/></svg></span>
+          <h3>Расписание группы</h3>
+          <p>Пары на день и неделю, текущая и следующая пара, фильтр по подгруппе. Работает без интернета.</p>
+        </article>
+        <article class="feature card">
+          <span class="f-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4 0-8 2-8 5v1h16v-1c0-3-4-5-8-5Z"/></svg></span>
+          <h3>Режим преподавателя</h3>
+          <p>Свои пары по всем группам: одна пара у нескольких групп — одна карточка со списком аудиторий.</p>
+        </article>
+        <article class="feature card">
+          <span class="f-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4V4Zm16 0h-4a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h5V4Z"/></svg></span>
+          <h3>Лекции из СДО</h3>
+          <p>Нажмите на пару — откроются лекции курса из СДО СВФУ. PDF читаются прямо в приложении.</p>
+        </article>
+        <article class="feature card">
+          <span class="f-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm1 10.6 3.2 1.9-.8 1.3L11 13V7h2v5.6Z"/></svg></span>
+          <h3>Сроки сдачи</h3>
+          <p>Задания из СДО с дедлайнами на экране «Сегодня» и напоминание за сутки до срока.</p>
+        </article>
+        <article class="feature card">
+          <span class="f-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2Zm6-6V11c0-3.1-1.6-5.6-4.5-6.3V4a1.5 1.5 0 0 0-3 0v.7C7.6 5.4 6 7.9 6 11v5l-2 2v1h16v-1l-2-2Z"/></svg></span>
+          <h3>Напоминания</h3>
+          <p>Уведомление за 5–30 минут до пары — для студентов и преподавателей.</p>
+        </article>
+        <article class="feature card">
+          <span class="f-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 20h14v-2H5v2Zm7-3 6-6-1.4-1.4-3.6 3.6V3h-2v10.2L7.4 9.6 6 11l6 6Z"/></svg></span>
+          <h3>Офлайн-лекции</h3>
+          <p>Скачайте лекции курса одной кнопкой и читайте их в дороге без интернета.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================== установка -->
+  <section class="section" id="install">
+    <div class="container">
+      <h2>Как установить</h2>
+      <p class="section-lead">Приложения нет в Google Play — оно устанавливается из файла APK.</p>
+      <ol class="steps">
+        <li class="card">
+          <span class="step-n">1</span>
+          <h3>Скачайте APK</h3>
+          <p>Откройте эту страницу на телефоне и нажмите «Скачать для Android».</p>
+        </li>
+        <li class="card">
+          <span class="step-n">2</span>
+          <h3>Разрешите установку</h3>
+          <p>Телефон спросит разрешение на установку из браузера — разрешите один раз.</p>
+        </li>
+        <li class="card">
+          <span class="step-n">3</span>
+          <h3>Выберите группу</h3>
+          <p>Укажите группу или своё ФИО. Чтобы видеть лекции — войдите в СДО во вкладке «СДО».</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ======================================================== призыв -->
+  <section class="section">
+    <div class="container">
+      <div class="cta">
+        <div>
+          <h2>Нет Android под рукой?</h2>
+          <p>Расписание группы и преподавателя доступно прямо в браузере.</p>
+        </div>
+        <a class="btn btn-light" href="schedule.html">Открыть расписание</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <span>Студибокс · неофициальное приложение для студентов СВФУ</span>
+    <a href="https://github.com/strariansi95-creator/studibox">Исходный код на GitHub</a>
+  </div>
+</footer>
+
+<script src="assets/landing.js" defer></script>
+</body>
+</html>

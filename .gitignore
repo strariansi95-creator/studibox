@@ -32,3 +32,11 @@ backend/.temp-debug-parse.json
 # ОС
 .DS_Store
 Thumbs.db
+
+# Локальные настройки Claude Code
+.claude/
+
+# Посторонние файлы в папке проекта (драйвер клавиатуры, архивы плагинов)
+AJAZZ AK820Pro/
+Plugin/
+*.zip

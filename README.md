@@ -25,6 +25,19 @@ F:\AIAPP2
      └── supabase\functions\schedule-api\index.ts
 ```
 
+## Сайт
+
+Папка `web/` — сайт без сборки (HTML + CSS + JS), публикуется на GitHub Pages
+workflow `.github/workflows/pages.yml` при каждом push в `main`, если изменилось что-то в `web/`.
+
+- `index.html` — страница о приложении; кнопка «Скачать» ведёт на APK последнего релиза.
+- `schedule.html` — расписание в браузере: группа (с фильтром подгрупп) или преподаватель.
+  Берёт данные из того же API, кэширует их в `localStorage` и обновляет, когда меняется
+  `/api/version`. Ссылкой можно поделиться: `schedule.html?group=КИТ-ИСИП-24-1`
+  или `schedule.html?teacher=Алексеева И.А.`
+
+Локально: `python -m http.server 8090 --directory web` → http://localhost:8090
+
 ## Сборка Release APK (Windows)
 
 ```bat
