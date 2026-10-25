@@ -1,5 +1,6 @@
 package com.studibox.app.ui.notes
 
+import com.studibox.app.ui.theme.notebookPaper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,7 +47,7 @@ fun NotesScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.background)
+            .notebookPaper()
     ) {
         Row(
             modifier = Modifier

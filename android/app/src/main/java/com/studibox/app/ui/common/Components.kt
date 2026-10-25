@@ -33,6 +33,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.studibox.app.ui.theme.inkStrike
+import com.studibox.app.ui.theme.markerHighlight
+import com.studibox.app.ui.theme.PairNumberTextStyle
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -213,9 +218,67 @@ internal fun LessonMetaRow(
     }
 }
 
+/** Номер пары красным на полях карточки — как номер задания в тетради. */
+@Composable
+internal fun PairNumber(number: Int, modifier: Modifier = Modifier) {
+    Text(
+        text = if (number > 0) number.toString() else "",
+        style = PairNumberTextStyle,
+        color = StudiboxTheme.colors.margin,
+        textAlign = TextAlign.End,
+        modifier = modifier.width(20.dp)
+    )
+}
+
 /**
- * Компактная карточка обычной пары: цветной индикатор, время, дисциплина,
- * преподаватель, аудитория и подгруппа — если она есть в исходных данных.
+ * Время пары: у текущей — под маркером на ту часть, которая уже прошла,
+ * у прошедшей — вычеркнуто чернилами.
+ */
+@Composable
+internal fun LessonTimeText(
+    startTime: String,
+    endTime: String,
+    state: LessonUiState,
+    modifier: Modifier = Modifier
+) {
+    val colors = StudiboxTheme.colors
+    val text = timeRange(startTime, endTime).ifBlank { "Время не указано" }
+    val decoration = when (state) {
+        LessonUiState.CURRENT -> Modifier.markerHighlight(lessonProgress(startTime, endTime)?.fraction ?: 1f)
+        LessonUiState.PAST -> Modifier.inkStrike()
+        else -> Modifier
+    }
+    Text(
+        text = text,
+        style = TimeTextStyle,
+        color = when (state) {
+            LessonUiState.CURRENT -> if (colors.isDark) colors.textPrimary else colors.onMarker
+            LessonUiState.PAST -> colors.textTertiary
+            else -> colors.textPrimary
+        },
+        modifier = modifier.then(decoration)
+    )
+}
+
+/** Подпись состояния под предметом: «Идёт сейчас» / «Следующая». */
+@Composable
+internal fun LessonStateLabel(state: LessonUiState) {
+    val text = when (state) {
+        LessonUiState.CURRENT -> "Идёт сейчас"
+        LessonUiState.NEXT -> "Следующая"
+        else -> return
+    }
+    Text(
+        text = text,
+        style = BadgeTextStyle,
+        color = StudiboxTheme.colors.accent,
+        modifier = Modifier.padding(top = 3.dp)
+    )
+}
+
+/**
+ * Карточка обычной пары — строка тетрадного листа: номер на полях, время,
+ * дисциплина, преподаватель, аудитория и подгруппа, если она есть в данных.
  */
 @Composable
 fun LessonCard(
@@ -226,61 +289,30 @@ fun LessonCard(
 ) {
     val colors = StudiboxTheme.colors
     val isCurrent = state == LessonUiState.CURRENT
-    val isPast = state == LessonUiState.PAST
-
-    val indicator = when (state) {
-        LessonUiState.CURRENT -> colors.accent
-        LessonUiState.NEXT -> colors.success
-        else -> colorForKey(lesson.subject)
-    }
 
     AppCard(
-        modifier = modifier
-            .fillMaxWidth()
-            .alpha(if (isPast) 0.55f else 1f),
+        modifier = modifier.fillMaxWidth(),
         onClick = onClick,
-        containerColor = if (isCurrent) colors.surfaceVariant else colors.surface,
-        borderColor = if (isCurrent) colors.accentMuted else colors.outline,
-        contentPadding = PaddingValues(14.dp)
+        containerColor = colors.surface,
+        borderColor = if (isCurrent) colors.accent else colors.outline,
+        contentPadding = PaddingValues(start = 8.dp, end = 14.dp, top = 14.dp, bottom = 14.dp)
     ) {
         Row(verticalAlignment = Alignment.Top) {
-            Box(
-                modifier = Modifier
-                    .width(4.dp)
-                    .height(46.dp)
-                    .clip(AppShapes.pill)
-                    .background(indicator)
-            )
+            PairNumber(lesson.number)
             Spacer(Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = timeRange(lesson.startTime, lesson.endTime).ifBlank { "Время не указано" },
-                        style = TimeTextStyle,
-                        color = if (isCurrent) colors.accent else colors.textPrimary
-                    )
-                    if (lesson.number > 0) {
-                        Text(
-                            text = "${lesson.number} пара",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = colors.textTertiary
-                        )
-                    }
-                }
+                LessonTimeText(lesson.startTime, lesson.endTime, state)
 
                 Text(
                     text = lesson.subject.ifBlank { "Занятие" },
                     style = MaterialTheme.typography.titleMedium,
-                    color = colors.textPrimary,
+                    color = if (state == LessonUiState.PAST) colors.textSecondary else colors.textPrimary,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 4.dp)
+                    modifier = Modifier.padding(top = 6.dp)
                 )
+                LessonStateLabel(state)
 
                 teacherNames(lesson.teacher).forEach { name ->
                     LessonMetaRow(
@@ -334,8 +366,29 @@ internal fun OpenLessonHint() {
 }
 
 /**
- * Главная карточка экрана «Сегодня»: текущая пара на фиолетово-синем градиенте,
- * с меткой «СЕЙЧАС», прогрессом и обратным отсчётом.
+ * Лист «Сейчас» для главной карточки экрана «Сегодня»: чернильная рамка и
+ * сдвинутая подложка, как у блока звонков на сайте.
+ */
+internal fun Modifier.currentSheet(): Modifier = composed {
+    val colors = StudiboxTheme.colors
+    this
+        .drawBehind {
+            val shift = 6.dp.toPx()
+            drawRoundRect(
+                color = colors.accentContainer,
+                topLeft = androidx.compose.ui.geometry.Offset(shift, shift),
+                size = size,
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(10.dp.toPx())
+            )
+        }
+        .clip(AppShapes.cardLarge)
+        .background(colors.surface)
+        .border(BorderStroke(2.dp, colors.accent), AppShapes.cardLarge)
+}
+
+/**
+ * Главная карточка экрана «Сегодня»: текущая пара, время под маркером на ту
+ * часть, что уже прошла, полоса прогресса и обратный отсчёт.
  */
 @Composable
 fun CurrentLessonCard(
@@ -350,14 +403,12 @@ fun CurrentLessonCard(
         animationSpec = tween(600),
         label = "lessonProgress"
     )
-    val onAccent = Color.White
-    val onAccentMuted = Color.White.copy(alpha = 0.78f)
 
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(AppShapes.cardLarge)
-            .background(colors.accentGradient)
+            .padding(end = 6.dp, bottom = 6.dp)
+            .currentSheet()
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .padding(Spacing.cardPaddingLarge)
     ) {
@@ -366,19 +417,12 @@ fun CurrentLessonCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .clip(AppShapes.pill)
-                    .background(Color.White.copy(alpha = 0.22f))
-                    .padding(horizontal = 10.dp, vertical = 5.dp)
-            ) {
-                Text(text = "СЕЙЧАС", style = BadgeTextStyle, color = onAccent)
-            }
+            Text(text = "Сейчас", style = BadgeTextStyle, color = colors.accent)
             if (lesson.number > 0) {
                 Text(
                     text = "${lesson.number} пара",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = onAccentMuted
+                    style = PairNumberTextStyle,
+                    color = colors.margin
                 )
             }
         }
@@ -386,25 +430,27 @@ fun CurrentLessonCard(
         Text(
             text = timeRange(lesson.startTime, lesson.endTime),
             style = MaterialTheme.typography.headlineSmall,
-            color = onAccent,
-            modifier = Modifier.padding(top = 14.dp)
+            color = if (colors.isDark) colors.textPrimary else colors.onMarker,
+            modifier = Modifier
+                .padding(top = 10.dp)
+                .markerHighlight(progress?.fraction ?: 1f)
         )
 
         Text(
             text = lesson.subject.ifBlank { "Занятие" },
-            style = MaterialTheme.typography.headlineMedium,
-            color = onAccent,
+            style = MaterialTheme.typography.titleLarge,
+            color = colors.textPrimary,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(top = 4.dp)
+            modifier = Modifier.padding(top = 8.dp)
         )
 
         teacherNames(lesson.teacher).forEach { name ->
             LessonMetaRow(
                 icon = Icons.Filled.Person,
                 text = name,
-                tint = onAccentMuted,
-                textColor = onAccentMuted,
+                tint = colors.textTertiary,
+                textColor = colors.textSecondary,
                 modifier = Modifier.padding(top = 2.dp)
             )
         }
@@ -413,16 +459,14 @@ fun CurrentLessonCard(
             LessonMetaRow(
                 icon = Icons.Filled.LocationOn,
                 text = "Ауд. ${lesson.classroom}",
-                tint = onAccentMuted,
-                textColor = onAccentMuted
+                tint = colors.textTertiary,
+                textColor = colors.textSecondary
             )
         }
 
         if (lesson.subgroup.isNotBlank()) {
             AppBadge(
                 text = SubgroupFormat.fullLabel(lesson.subgroup),
-                containerColor = Color.White.copy(alpha = 0.20f),
-                contentColor = onAccent,
                 modifier = Modifier.padding(top = 10.dp)
             )
         }
@@ -440,14 +484,14 @@ fun CurrentLessonCard(
                         .weight(1f)
                         .height(6.dp)
                         .clip(AppShapes.pill),
-                    color = onAccent,
-                    trackColor = Color.White.copy(alpha = 0.25f)
+                    color = colors.accent,
+                    trackColor = colors.accentContainer
                 )
                 Spacer(Modifier.width(12.dp))
                 Text(
                     text = "${progress.minutesLeft} мин",
                     style = MaterialTheme.typography.labelMedium,
-                    color = onAccentMuted
+                    color = colors.textSecondary
                 )
             }
         }
@@ -507,72 +551,30 @@ fun TeacherLessonCard(
 ) {
     val colors = StudiboxTheme.colors
     val isCurrent = state == LessonUiState.CURRENT
-    val isPast = state == LessonUiState.PAST
-
-    val indicator = when (state) {
-        LessonUiState.CURRENT -> colors.accent
-        LessonUiState.NEXT -> colors.success
-        else -> colorForKey(slot.subject)
-    }
 
     AppCard(
-        modifier = modifier
-            .fillMaxWidth()
-            .alpha(if (isPast) 0.55f else 1f),
+        modifier = modifier.fillMaxWidth(),
         onClick = onClick,
-        containerColor = if (isCurrent) colors.surfaceVariant else colors.surface,
-        borderColor = if (isCurrent) colors.accentMuted else colors.outline,
-        contentPadding = PaddingValues(14.dp)
+        containerColor = colors.surface,
+        borderColor = if (isCurrent) colors.accent else colors.outline,
+        contentPadding = PaddingValues(start = 8.dp, end = 14.dp, top = 14.dp, bottom = 14.dp)
     ) {
         Row(verticalAlignment = Alignment.Top) {
-            Box(
-                modifier = Modifier
-                    .width(4.dp)
-                    .height(46.dp)
-                    .clip(AppShapes.pill)
-                    .background(indicator)
-            )
+            PairNumber(slot.number)
             Spacer(Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = timeRange(slot.startTime, slot.endTime).ifBlank { "Время не указано" },
-                            style = TimeTextStyle,
-                            color = if (isCurrent) colors.accent else colors.textPrimary
-                        )
-                        if (isCurrent) {
-                            Spacer(Modifier.width(8.dp))
-                            AppBadge(
-                                text = "сейчас",
-                                uppercase = true,
-                                containerColor = colors.accent,
-                                contentColor = colors.textOnAccent
-                            )
-                        }
-                    }
-                    if (slot.number > 0) {
-                        Text(
-                            text = "${slot.number} пара",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = colors.textTertiary
-                        )
-                    }
-                }
+                LessonTimeText(slot.startTime, slot.endTime, state)
 
                 Text(
                     text = slot.subject.ifBlank { "Занятие" },
                     style = MaterialTheme.typography.titleMedium,
-                    color = colors.textPrimary,
+                    color = if (state == LessonUiState.PAST) colors.textSecondary else colors.textPrimary,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 4.dp)
+                    modifier = Modifier.padding(top = 6.dp)
                 )
+                LessonStateLabel(state)
 
                 // Несколько групп на одной паре — перечисляем внутри ОДНОЙ карточки.
                 slot.groups.forEach { groupRoom ->

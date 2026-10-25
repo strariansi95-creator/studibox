@@ -1,5 +1,6 @@
 package com.studibox.app.ui.lms
 
+import com.studibox.app.ui.theme.notebookPaper
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -84,7 +85,8 @@ fun LmsMaterialsScreen(
     }
 
     Scaffold(
-        containerColor = colors.background,
+        modifier = Modifier.notebookPaper(),
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
         snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
             TopAppBar(

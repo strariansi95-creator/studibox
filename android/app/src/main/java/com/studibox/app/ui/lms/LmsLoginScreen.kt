@@ -1,5 +1,6 @@
 package com.studibox.app.ui.lms
 
+import com.studibox.app.ui.theme.notebookPaper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -71,7 +72,8 @@ fun LmsLoginScreen(
     )
 
     Scaffold(
-        containerColor = colors.background,
+        modifier = Modifier.notebookPaper(),
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(

@@ -516,7 +516,7 @@ fun SettingsSwitchItem(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color.White,
+                    checkedThumbColor = colors.textOnAccent,
                     checkedTrackColor = colors.accent,
                     uncheckedThumbColor = colors.textTertiary,
                     uncheckedTrackColor = colors.surfaceVariant,

@@ -1,5 +1,6 @@
 package com.studibox.app.ui.schedule
 
+import com.studibox.app.ui.theme.notebookPaper
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -107,7 +108,7 @@ fun ScheduleScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.background)
+            .notebookPaper()
     ) {
         Column(
             modifier = Modifier

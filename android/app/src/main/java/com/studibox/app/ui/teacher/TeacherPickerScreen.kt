@@ -1,5 +1,6 @@
 package com.studibox.app.ui.teacher
 
+import com.studibox.app.ui.theme.notebookPaper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -65,7 +66,7 @@ fun TeacherPickerScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.background)
+            .notebookPaper()
     ) {
         Column(
             modifier = Modifier

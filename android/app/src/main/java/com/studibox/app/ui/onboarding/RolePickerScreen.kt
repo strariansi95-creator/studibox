@@ -1,5 +1,6 @@
 package com.studibox.app.ui.onboarding
 
+import com.studibox.app.ui.theme.notebookPaper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,7 +42,7 @@ fun RolePickerScreen(onRoleChosen: (UserRole) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.background)
+            .notebookPaper()
             .padding(horizontal = Spacing.screenHorizontal),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally

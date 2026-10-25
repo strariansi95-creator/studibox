@@ -1,5 +1,6 @@
 package com.studibox.app.ui.today
 
+import com.studibox.app.ui.theme.notebookPaper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -257,7 +258,7 @@ fun TodayScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(StudiboxTheme.colors.background),
+            .notebookPaper(),
         contentPadding = screenPadding,
         verticalArrangement = Arrangement.spacedBy(Spacing.betweenCards)
     ) {
@@ -373,7 +374,7 @@ private fun TodayScreenTeacher(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(StudiboxTheme.colors.background),
+            .notebookPaper(),
         contentPadding = screenPadding,
         verticalArrangement = Arrangement.spacedBy(Spacing.betweenCards)
     ) {

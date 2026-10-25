@@ -1,5 +1,6 @@
 package com.studibox.app.ui.notes
 
+import com.studibox.app.ui.theme.notebookPaper
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -63,7 +64,8 @@ fun NoteEditScreen(
     var showDatePicker by remember { mutableStateOf(false) }
 
     Scaffold(
-        containerColor = colors.background,
+        modifier = Modifier.notebookPaper(),
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(

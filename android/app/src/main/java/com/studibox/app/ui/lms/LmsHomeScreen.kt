@@ -1,5 +1,6 @@
 package com.studibox.app.ui.lms
 
+import com.studibox.app.ui.theme.notebookPaper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -93,7 +94,7 @@ fun LmsHomeScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.background),
+            .notebookPaper(),
         contentPadding = PaddingValues(
             start = Spacing.screenHorizontal,
             end = Spacing.screenHorizontal,

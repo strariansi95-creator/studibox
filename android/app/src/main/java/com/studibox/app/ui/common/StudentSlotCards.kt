@@ -2,10 +2,8 @@ package com.studibox.app.ui.common
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -24,18 +22,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.studibox.app.data.local.LessonEntity
 import com.studibox.app.ui.theme.AppShapes
 import com.studibox.app.ui.theme.BadgeTextStyle
+import com.studibox.app.ui.theme.PairNumberTextStyle
 import com.studibox.app.ui.theme.Spacing
 import com.studibox.app.ui.theme.StudiboxTheme
-import com.studibox.app.ui.theme.TimeTextStyle
-import com.studibox.app.ui.theme.colorForKey
+import com.studibox.app.ui.theme.markerHighlight
 import com.studibox.app.util.SubgroupFormat
 
 /** Карточка слота: одиночная пара — обычная LessonCard, поделённая на подгруппы — одна общая. */
@@ -67,10 +63,59 @@ fun CurrentStudentSlotCard(
     }
 }
 
+/** Часть карточки — пара одной подгруппы. Нажимается отдельно: у подгрупп разные лекции. */
+@Composable
+private fun SubgroupPart(
+    lesson: LessonEntity,
+    past: Boolean,
+    large: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = StudiboxTheme.colors
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.Top
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = SubgroupFormat.fullLabel(lesson.subgroup),
+                style = MaterialTheme.typography.labelMedium,
+                color = colors.margin
+            )
+            Text(
+                text = lesson.subject.ifBlank { "Занятие" },
+                style = if (large) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium,
+                color = if (past) colors.textSecondary else colors.textPrimary,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 2.dp)
+            )
+            teacherNames(lesson.teacher).forEach { name ->
+                LessonMetaRow(Icons.Filled.Person, name, colors.textTertiary, colors.textSecondary)
+            }
+            if (lesson.classroom.isNotBlank()) {
+                LessonMetaRow(Icons.Filled.LocationOn, "Ауд. ${lesson.classroom}", colors.textTertiary, colors.textSecondary)
+            }
+            val chips = listOf(lesson.type, lesson.weekType).filter { it.isNotBlank() }
+            if (chips.isNotEmpty()) {
+                Row(
+                    modifier = Modifier.padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    chips.forEach { AppBadge(text = it) }
+                }
+            }
+        }
+        OpenLessonHint()
+    }
+}
+
 /**
- * Пара, поделённая на подгруппы: время и номер пары — один раз, ниже части
- * «1 подгруппа» / «2 подгруппа». Каждая часть нажимается отдельно: у подгрупп
- * разные предметы, а значит, и разные лекции в СДО.
+ * Пара, поделённая на подгруппы: номер и время — один раз, ниже части
+ * «1 подгруппа» / «2 подгруппа».
  */
 @Composable
 private fun SubgroupSlotCard(
@@ -80,90 +125,35 @@ private fun SubgroupSlotCard(
     modifier: Modifier
 ) {
     val colors = StudiboxTheme.colors
-    val isCurrent = state == LessonUiState.CURRENT
     val first = slot.first
-    val indicator = when (state) {
-        LessonUiState.CURRENT -> colors.accent
-        LessonUiState.NEXT -> colors.success
-        else -> colorForKey(first.subject)
-    }
 
     AppCard(
-        modifier = modifier
-            .fillMaxWidth()
-            .alpha(if (state == LessonUiState.PAST) 0.55f else 1f),
-        containerColor = if (isCurrent) colors.surfaceVariant else colors.surface,
-        borderColor = if (isCurrent) colors.accentMuted else colors.outline,
+        modifier = modifier.fillMaxWidth(),
+        containerColor = colors.surface,
+        borderColor = if (state == LessonUiState.CURRENT) colors.accent else colors.outline,
         contentPadding = PaddingValues(top = 14.dp, bottom = 4.dp)
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.padding(start = 8.dp, end = 14.dp),
+            verticalAlignment = Alignment.Top
         ) {
-            Box(
-                modifier = Modifier
-                    .width(4.dp)
-                    .height(20.dp)
-                    .clip(AppShapes.pill)
-                    .background(indicator)
-            )
+            PairNumber(first.number)
             Spacer(Modifier.width(12.dp))
-            Text(
-                text = timeRange(first.startTime, first.endTime).ifBlank { "Время не указано" },
-                style = TimeTextStyle,
-                color = if (isCurrent) colors.accent else colors.textPrimary,
-                modifier = Modifier.weight(1f)
-            )
-            if (first.number > 0) {
-                Text(
-                    text = "${first.number} пара",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = colors.textTertiary
-                )
+            Column {
+                LessonTimeText(first.startTime, first.endTime, state)
+                LessonStateLabel(state)
             }
         }
 
         slot.lessons.forEachIndexed { index, lesson ->
-            if (index > 0) AppRowDivider(Modifier.padding(start = 30.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onOpenLesson(lesson) }
-                    .padding(start = 30.dp, end = 14.dp, top = 10.dp, bottom = 12.dp),
-                verticalAlignment = Alignment.Top
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = SubgroupFormat.fullLabel(lesson.subgroup),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = colors.accent
-                    )
-                    Text(
-                        text = lesson.subject.ifBlank { "Занятие" },
-                        style = MaterialTheme.typography.titleMedium,
-                        color = colors.textPrimary,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
-                    teacherNames(lesson.teacher).forEach { name ->
-                        LessonMetaRow(Icons.Filled.Person, name, colors.textTertiary, colors.textSecondary)
-                    }
-                    if (lesson.classroom.isNotBlank()) {
-                        LessonMetaRow(Icons.Filled.LocationOn, "Ауд. ${lesson.classroom}", colors.textTertiary, colors.textSecondary)
-                    }
-                    val chips = listOf(lesson.type, lesson.weekType).filter { it.isNotBlank() }
-                    if (chips.isNotEmpty()) {
-                        Row(
-                            modifier = Modifier.padding(top = 8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            chips.forEach { AppBadge(text = it) }
-                        }
-                    }
-                }
-                OpenLessonHint()
-            }
+            if (index > 0) AppRowDivider(Modifier.padding(start = 40.dp))
+            SubgroupPart(
+                lesson = lesson,
+                past = state == LessonUiState.PAST,
+                large = false,
+                onClick = { onOpenLesson(lesson) },
+                modifier = Modifier.padding(start = 40.dp, end = 14.dp, top = 10.dp, bottom = 12.dp)
+            )
         }
     }
 }
@@ -182,14 +172,12 @@ private fun CurrentSubgroupSlotCard(
         animationSpec = tween(600),
         label = "slotProgress"
     )
-    val onAccent = Color.White
-    val onAccentMuted = Color.White.copy(alpha = 0.78f)
 
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(AppShapes.cardLarge)
-            .background(colors.accentGradient)
+            .padding(end = 6.dp, bottom = 6.dp)
+            .currentSheet()
             .padding(vertical = Spacing.cardPaddingLarge)
     ) {
         Column(modifier = Modifier.padding(horizontal = Spacing.cardPaddingLarge)) {
@@ -198,67 +186,30 @@ private fun CurrentSubgroupSlotCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .clip(AppShapes.pill)
-                        .background(Color.White.copy(alpha = 0.22f))
-                        .padding(horizontal = 10.dp, vertical = 5.dp)
-                ) {
-                    Text(text = "СЕЙЧАС", style = BadgeTextStyle, color = onAccent)
-                }
+                Text(text = "Сейчас", style = BadgeTextStyle, color = colors.accent)
                 if (first.number > 0) {
-                    Text(text = "${first.number} пара", style = MaterialTheme.typography.labelMedium, color = onAccentMuted)
+                    Text(text = "${first.number} пара", style = PairNumberTextStyle, color = colors.margin)
                 }
             }
             Text(
                 text = timeRange(first.startTime, first.endTime),
                 style = MaterialTheme.typography.headlineSmall,
-                color = onAccent,
-                modifier = Modifier.padding(top = 14.dp)
+                color = if (colors.isDark) colors.textPrimary else colors.onMarker,
+                modifier = Modifier
+                    .padding(top = 10.dp)
+                    .markerHighlight(progress?.fraction ?: 1f)
             )
         }
 
         slot.lessons.forEachIndexed { index, lesson ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onOpenLesson(lesson) }
-                    .padding(horizontal = Spacing.cardPaddingLarge, vertical = 10.dp)
-            ) {
-                if (index > 0) {
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(1.dp)
-                            .background(Color.White.copy(alpha = 0.22f))
-                    )
-                    Spacer(Modifier.height(10.dp))
-                }
-                Text(
-                    text = SubgroupFormat.fullLabel(lesson.subgroup),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = onAccentMuted
-                )
-                Text(
-                    text = lesson.subject.ifBlank { "Занятие" },
-                    style = MaterialTheme.typography.titleLarge,
-                    color = onAccent,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                val details = buildList {
-                    addAll(teacherNames(lesson.teacher))
-                    if (lesson.classroom.isNotBlank()) add("ауд. ${lesson.classroom}")
-                }.joinToString(", ")
-                if (details.isNotBlank()) {
-                    Text(
-                        text = details,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = onAccentMuted,
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
-                }
-            }
+            if (index > 0) AppRowDivider(Modifier.padding(horizontal = Spacing.cardPaddingLarge))
+            SubgroupPart(
+                lesson = lesson,
+                past = false,
+                large = true,
+                onClick = { onOpenLesson(lesson) },
+                modifier = Modifier.padding(horizontal = Spacing.cardPaddingLarge, vertical = 10.dp)
+            )
         }
 
         if (progress != null) {
@@ -275,11 +226,15 @@ private fun CurrentSubgroupSlotCard(
                         .weight(1f)
                         .height(6.dp)
                         .clip(AppShapes.pill),
-                    color = onAccent,
-                    trackColor = Color.White.copy(alpha = 0.25f)
+                    color = colors.accent,
+                    trackColor = colors.accentContainer
                 )
                 Spacer(Modifier.width(12.dp))
-                Text(text = "${progress.minutesLeft} мин", style = MaterialTheme.typography.labelMedium, color = onAccentMuted)
+                Text(
+                    text = "${progress.minutesLeft} мин",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = colors.textSecondary
+                )
             }
         }
     }

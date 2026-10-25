@@ -1,5 +1,6 @@
 package com.studibox.app.ui.settings
 
+import com.studibox.app.ui.theme.notebookPaper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -88,7 +89,7 @@ fun SettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.background)
+            .notebookPaper()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = Spacing.screenHorizontal)
             .padding(top = 10.dp, bottom = 28.dp)
