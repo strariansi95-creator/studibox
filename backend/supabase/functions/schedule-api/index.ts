@@ -658,12 +658,17 @@ function buildCellLesson(parts: string[], isLab: boolean, typeLabel: string): Ce
     else if (!classroom) classroom = part;
   }
 
-  // Подгруппа — только на лабораторной. На лекции/практике даже если в
-  // тексте предмета случайно встретится что-то похожее на "1пг", занятие
-  // всё равно общее для всех подгрупп.
-  const subgroup = isLab ? matchSubgroup(subject) : "";
+  // Явная метка "1пг"/"2пг" в названии — это подгруппа при ЛЮБОМ типе
+  // занятия: например, «Иностранный язык … 1пг» (практика) идёт только у
+  // первой подгруппы, а у второй в это же время свой преподаватель и
+  // аудитория. Раньше подгруппа ставилась только лабораторным, и такие
+  // пары в приложении выглядели как две разные пары в одно время.
+  const subgroup = matchSubgroup(subject);
+  const cleanSubject = subgroup
+    ? subject.replace(SUBGROUP_MARKER, "").replace(/\s{2,}/g, " ").trim()
+    : subject;
 
-  return { subject, teacher: cleanTeacher(teacher), classroom, subgroup, type: typeLabel };
+  return { subject: cleanSubject, teacher: cleanTeacher(teacher), classroom, subgroup, type: typeLabel };
 }
 
 /**
@@ -929,12 +934,11 @@ function parseRowOrientedWorkbook(
     // вторая подгруппа, а, скорее всего, примечание под таблицей: не считаем парой.
     if (timeInherited && !teacher && !classroom && !typeCell) continue;
 
-    const marker = matchSubgroup(subject);
-    // Делим по подгруппам только лабораторные. Если вид не указан вовсе
-    // (пустая ячейка), но в названии явно есть "1пг"/"2пг" — это подгруппа.
-    const isLab = typeRaw ? LAB_TYPE_PATTERN.test(typeRaw) : marker !== "";
-    const subgroup = isLab ? marker : "";
-    const cleanSubject = isLab && marker
+    // Явная метка "1пг"/"2пг" в названии — подгруппа при любом типе
+    // занятия (см. buildCellLesson): практика иностранного языка тоже
+    // бывает поделена на подгруппы с разными преподавателями.
+    const subgroup = matchSubgroup(subject);
+    const cleanSubject = subgroup
       ? subject.replace(SUBGROUP_MARKER, "").replace(/\s{2,}/g, " ").trim()
       : subject;
     const type = normalizeWorkbookType(typeRaw);
