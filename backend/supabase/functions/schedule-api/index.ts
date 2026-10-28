@@ -1051,9 +1051,26 @@ function parseColumnOrientedWorkbook(
  * всё равно 2-я пара, а у двух строк подгрупп одного слота номер одинаковый.
  */
 function assignLessonNumbers(lessons: ParsedLesson[]): void {
-  const starts = [...new Set(lessons.map((l) => l.start_time))].sort();
-  const rank = new Map(starts.map((s, i) => [s, i + 1]));
-  for (const lesson of lessons) lesson.lesson_number = rank.get(lesson.start_time) ?? 0;
+  // Самое позднее окончание для каждого времени начала: 08:00 → 09:35 и т.д.
+  const endByStart = new Map<string, string>();
+  for (const l of lessons) {
+    const prev = endByStart.get(l.start_time);
+    if (!prev || l.end_time > prev) endByStart.set(l.start_time, l.end_time);
+  }
+  const starts = [...endByStart.keys()].sort();
+
+  // Время начала, попадающее ВНУТРЬ другой пары, — не новая пара, а её часть.
+  // Например, «08:50–09:35» (вторая половина 1-й пары) раньше получало номер 2,
+  // и у ВСЕГО файла номера сдвигались на один: 09:50 становилась 3-й парой.
+  const slots = starts.filter((s) =>
+    !starts.some((other) => other < s && (endByStart.get(other) ?? "") > s)
+  );
+
+  for (const lesson of lessons) {
+    let number = 0;
+    for (let i = 0; i < slots.length && slots[i] <= lesson.start_time; i++) number = i + 1;
+    lesson.lesson_number = number;
+  }
 }
 
 function mergeUnique(a: string, b: string, separator: string): string {
